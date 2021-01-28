@@ -1,0 +1,42 @@
+{
+    "name": "jurager/tracker",
+    "description": "Track and manage sessions, Passport Tokens and Sanctum Tokens in Laravel.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Yuri Gerassimov",
+            "email": "jurager01@gmail.com",
+            "homepage": "https://gerassimov.me",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9.5",
+        "orchestra/testbench": "^6.9",
+        "laravel/sanctum": "^2.9",
+        "laravel/passport": "^9.4",
+        "whichbrowser/parser": "^2.1",
+        "jenssegers/agent": "^2.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jurager\\Tracker\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jurager\\Tracker\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jurager\\Tracker\\TrackerServiceProvider"
+            ]
+        }
+    }
+}
