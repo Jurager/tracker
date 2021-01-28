@@ -14,118 +14,117 @@ use Illuminate\Support\Str;
 
 class AuthEventSubscriber
 {
-    public function handleSuccessfulLogin(LoginEvent $event)
-    {
-        if ($this->tracked($event->user)) {
+	public function handleSuccessfulLogin(LoginEvent $event)
+	{
+		if ($this->tracked($event->user)) {
 
-            if (Auth::viaRemember()) {
-                // Logged in via remember token
+			if (Auth::viaRemember()) {
+				// Logged in via remember token
 
-                if (!is_null($recaller = $this->recaller())) {
+				if (!is_null($recaller = $this->recaller())) {
 
-                    // Update session id
-                    Login::where('remember_token', $recaller->token())->update([
-                        'session_id' => session()->getId()
-                    ]);
-                }
-            } else {
-                // Initial login
+					// Update session id
+					Login::where('remember_token', $recaller->token())->update([
+						'session_id' => session()->getId()
+					]);
+				}
+			} else {
+				// Initial login
 
-                // Regenerate the session ID to avoid session fixation attacks
-                session()->regenerate();
+				// Regenerate the session ID to avoid session fixation attacks
+				session()->regenerate();
 
-                // Get as much information as possible about the request
-                $context = new RequestContext;
+				// Get as much information as possible about the request
+				$context = new RequestContext;
 
-                // Build a new login
-                $login = LoginFactory::build($event, $context);
+				// Build a new login
+				$login = LoginFactory::build($event, $context);
 
-                // Set the expiration date based on whether it is a remembered login or not
-                if ($event->remember) {
-                    $login->expiresAt(Carbon::now()->addDays(config('tracker.remember_lifetime', 365)));
-                } else {
-                    $login->expiresAt(Carbon::now()->addMinutes(config('session.lifetime')));
-                }
+				// Set the expiration date based on whether it is a remembered login or not
+				if ($event->remember) {
+					$login->expiresAt(Carbon::now()->addDays(config('tracker.remember_lifetime', 365)));
+				} else {
+					$login->expiresAt(Carbon::now()->addMinutes(config('session.lifetime')));
+				}
 
-                // Attach the login to the user and save it
-                $event->user->logins()->save($login);
+				// Attach the login to the user and save it
+				$event->user->logins()->save($login);
 
-                // Update the remember token
-                $this->updateRememberToken($event->user, Str::random(60));
+				// Update the remember token
+				$this->updateRememberToken($event->user, Str::random(60));
 
-                event(new \Jurager\Tracker\Events\Login($event->user, $context));
-            }
-        }
-    }
+				event(new \Jurager\Tracker\Events\Login($event->user, $context));
+			}
+		}
+	}
 
-    public function handleSuccessfulLogout($event)
-    {
-        if ($this->tracked($event->user)) {
+	public function handleSuccessfulLogout($event)
+	{
+		if ($this->tracked($event->user)) {
 
-            // Delete login
-            $event->user->logins()->where('session_id', session()->getId())
-                ->delete();
-        }
-    }
+			// Delete login
+			$event->user->logins()->where('session_id', session()->getId())->delete();
+		}
+	}
 
-    /**
-     * Get the decrypted recaller cookie for the request.
-     *
-     * @return Recaller|null
-     */
-    protected function recaller()
-    {
-        if (is_null(request())) {
-            return null;
-        }
+	/**
+	 * Get the decrypted recaller cookie for the request.
+	 *
+	 * @return Recaller|null
+	 */
+	protected function recaller()
+	{
+		if (is_null(request())) {
+			return null;
+		}
 
-        if ($recaller = request()->cookies->get(Auth::guard()->getRecallerName())) {
-            return new Recaller($recaller);
-        }
+		if ($recaller = request()->cookies->get(Auth::guard()->getRecallerName())) {
+			return new Recaller($recaller);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    /**
-     * Update the "remember me" token for the given user in storage.
-     *
-     * @param  Authenticatable  $user
-     * @param  string  $token
-     * @return void
-     */
-    protected function updateRememberToken(Authenticatable $user, $token)
-    {
-        $user->setRememberToken($token);
-        $user->timestamps = false;
-        $user->save();
-    }
+	/**
+	 * Update the "remember me" token for the given user in storage.
+	 *
+	 * @param  Authenticatable  $user
+	 * @param  string  $token
+	 * @return void
+	 */
+	protected function updateRememberToken(Authenticatable $user, $token)
+	{
+		$user->setRememberToken($token);
+		$user->timestamps = false;
+		$user->save();
+	}
 
-    /**
-     * Tracking enabled for this user?
-     *
-     * @param \Illuminate\Contracts\Auth\Authenticatable $user
-     * @return bool
-     */
-    protected function tracked($user)
-    {
-        return in_array('Jurager\Tracker\Traits\Tracking', class_uses($user));
-    }
+	/**
+	 * Tracking enabled for this user?
+	 *
+	 * @param \Illuminate\Contracts\Auth\Authenticatable $user
+	 * @return bool
+	 */
+	protected function tracked($user)
+	{
+		return in_array('Jurager\Tracker\Traits\Tracking', class_uses($user));
+	}
 
-    /**
-     * Register the listeners for the subscriber.
-     *
-     * @param  \Illuminate\Events\Dispatcher  $events
-     */
-    public function subscribe($events)
-    {
-        $events->listen(
-            'Illuminate\Auth\Events\Login',
-            'Jurager\Tracker\Listeners\AuthEventSubscriber@handleSuccessfulLogin'
-        );
+	/**
+	 * Register the listeners for the subscriber.
+	 *
+	 * @param  \Illuminate\Events\Dispatcher  $events
+	 */
+	public function subscribe($events)
+	{
+		$events->listen(
+			'Illuminate\Auth\Events\Login',
+			'Jurager\Tracker\Listeners\AuthEventSubscriber@handleSuccessfulLogin'
+		);
 
-        $events->listen(
-            'Illuminate\Auth\Events\Logout',
-            'Jurager\Tracker\Listeners\AuthEventSubscriber@handleSuccessfulLogout'
-        );
-    }
+		$events->listen(
+			'Illuminate\Auth\Events\Logout',
+			'Jurager\Tracker\Listeners\AuthEventSubscriber@handleSuccessfulLogout'
+		);
+	}
 }

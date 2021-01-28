@@ -18,12 +18,9 @@ class ExpirationScope implements Scope
 	 */
 	public function apply(Builder $builder, Model $model)
 	{
-		$expirationColumn = $model->getExpirationAttribute();
-
-		$builder
-			->where(function ($query) use ($expirationColumn) {
-				$query->whereNull($expirationColumn)
-					->orWhere($expirationColumn, '>', Carbon::now());
-			});
+		$builder->where(function ($query) {
+			$query->whereNull('expires_at')
+				->orWhere('expires_at', '>', Carbon::now());
+		});
 	}
 }

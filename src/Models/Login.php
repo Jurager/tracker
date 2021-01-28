@@ -6,11 +6,10 @@ use Jurager\Tracker\EloquentQueryBuilder;
 use Jurager\Tracker\Traits\ManagesLogins;
 use Jurager\Tracker\Traits\Expirable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Login extends Model
 {
-    use Expirable, ManagesLogins, SoftDeletes;
+    use Expirable, ManagesLogins;
 
     /**
      * The attributes that should be mutated to dates.
