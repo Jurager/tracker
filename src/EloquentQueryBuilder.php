@@ -5,8 +5,9 @@ namespace Jurager\Tracker;
 use Jurager\Tracker\Traits\ManagesLogins;
 use Jurager\Tracker\Scopes\ExpirationScope;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
-class EloquentQueryBuilder
+class EloquentQueryBuilder extends Builder
 {
     use ManagesLogins;
 
