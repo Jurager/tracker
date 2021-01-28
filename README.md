@@ -133,23 +133,6 @@ In your `config/auth.php` configuration file, use the `tracked` driver in the us
 ],
 ```
 
-### Generate the scaffolding
-
-This step is optional but can help you getting started by generating the scaffolding of the Auth Tracker.
-
-Launch this command:
-
-```bash
-php artisan tracker:install
-```
-
-This command will:
-
-- publish the controller `TrackingController` in `app/Http/Controllers/Auth`
-- publish the view `list.blade.php` in `resources/views/auth`
-- add routes in `routes/web.php` via the `Route::tracker()` macro (see all the available [routes](#routes))
-
-Now, log in with a tracked user and go to `/security`. You will find a page to manage the logins! 
 
 ### Laravel Sanctum
 
