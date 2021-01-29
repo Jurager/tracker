@@ -11,7 +11,7 @@ class RouteMacros
      *
      * @return \Closure
      */
-    public function authTracker()
+    public function tracker()
     {
         return function ($prefix) {
 
