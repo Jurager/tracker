@@ -95,11 +95,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
                 }
             }
 
-            // Set the expiration date
-            if ($minutes = config('sanctum.expiration')) {
-                $personalAccessToken->expiresAt(Carbon::now()->addMinutes($minutes));
-            }
-
             // Dispatch event
             event(new PersonalAccessTokenCreated($personalAccessToken, $context));
         });
