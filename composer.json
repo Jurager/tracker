@@ -8,6 +8,12 @@
             "email": "anthonylajusticia@gmail.com",
             "homepage": "https://anthonylajusticia.com",
             "role": "Developer"
+        },
+        {
+            "name": "Yuri Gerassimov",
+            "email": "jurager01@gmail.com",
+            "homepage": "https://gerassimov.me",
+            "role": "Developer"
         }
     ],
     "require": {

@@ -79,7 +79,7 @@ return [
         | to the provider's API.
         |
         | If the request takes more time, the IP address lookup will be ignored
-        | and the ALajusticia\SanctumTracker\Events\FailedApiCall will be
+        | and the Jurager\Tracker\Events\FailedApiCall will be
         | dispatched, receiving the attribute $exception containing the
         | GuzzleHttp\Exception\TransferException.
         |
