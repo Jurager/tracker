@@ -4,15 +4,12 @@ namespace Jurager\Tracker\Models;
 
 use Jurager\Tracker\Events\PersonalAccessTokenCreated;
 use Jurager\Tracker\RequestContext;
-use Jurager\Tracker\Traits\Expirable;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Request;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
-    use Expirable, SoftDeletes;
 
     /**
      * The attributes that should be mutated to dates.
@@ -20,7 +17,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      * @var array
      */
     protected $dates = [
-        'expires_at',
         'last_used_at',
     ];
 
@@ -31,7 +27,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      */
     protected $casts = [
         'abilities'    => 'json',
-        'expires_at'   => 'datetime',
         'last_used_at' => 'datetime',
     ];
 

@@ -2,7 +2,6 @@
 
 namespace Jurager\Tracker;
 
-use Jurager\Tracker\Macros\BlueprintMacros;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,7 +19,7 @@ class TrackerServiceProvider extends ServiceProvider
 
 	    // Register commands
 	    $this->commands([
-		    Commands\PurgeCommand::class,
+		    Commands\Purge::class,
 	    ]);
     }
 
@@ -37,8 +36,5 @@ class TrackerServiceProvider extends ServiceProvider
 
         // Load migrations
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-
-	    // Register macros
-	    Blueprint::mixin(new BlueprintMacros);
     }
 }

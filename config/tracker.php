@@ -20,6 +20,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Expires
+    |--------------------------------------------------------------------------
+    |
+    | After which time (in days) the issued token will expire
+    |
+    | We will watch the 'last_used_at' field in 'personal_access_tokens' table
+    | This field indicates when the last time token was used.
+    | Based on this value we will clean the old entries that no longer used.
+    |
+    | Use 0 to disable this feature.
+    |
+    */
+
+    'expires' => 0,
+
+    /*
+    |--------------------------------------------------------------------------
     | IP Address Lookup
     |--------------------------------------------------------------------------
     |
