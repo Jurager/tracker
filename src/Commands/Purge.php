@@ -39,7 +39,7 @@ class Purge extends Command
 			$this->comment('Deleting expired records...');
 			$this->line('');
 	
-			$total = PersonalAccessToken::where('last_used_at', '<=', Carbon::now()->addDays(config('tracker.expires')))->forceDelete();
+			$total = PersonalAccessToken::where('last_used_at', '<=', Carbon::now()->addDays(config('tracker.expires')))->delete();
 	
 			if ($total > 0) {
 				$this->info($total . ' ' . Str::plural('record', $total) . ' deleted.');

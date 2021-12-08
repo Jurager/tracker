@@ -26,10 +26,6 @@ class UpdatePersonalAccessTokensTable extends Migration
                 $table->string('region')->nullable();
                 $table->string('country')->nullable();
             });
-            $table->after('updated_at', function ($table) {
-	            $table->timestamp('expires_at');
-                $table->softDeletes();
-            });
         });
     }
 
@@ -51,9 +47,7 @@ class UpdatePersonalAccessTokensTable extends Migration
                 'browser',
                 'city',
                 'region',
-                'country',
-                'expires_at',
-                'deleted_at',
+                'country'
             ]);
         });
     }
