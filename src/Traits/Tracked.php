@@ -4,6 +4,18 @@ namespace Jurager\Tracker\Traits;
 
 trait Tracked
 {
+
+     /**
+     * Get all logins history
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+	public function logins(): \Illuminate\Database\Eloquent\Relations\MorphMany
+	{
+		return $this->morphMany(\Jurager\Tracker\Models\PersonalAccessToken::class, 'tokenable');
+	}
+
+
     /**
      * Revoke an access token by its ID.
      *
