@@ -7,9 +7,11 @@ use Jurager\Tracker\RequestContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Request;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
+use Illuminate\Database\Eloquent\MassPrunable;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
+    use MassPrunable;
 
     /**
      * The attributes that should be mutated to dates.
@@ -124,5 +126,15 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     public function getIsCurrentAttribute()
     {
         return $this->id === Request::user()->currentAccessToken()->id;
+    }
+
+    /**
+     * Get the prunable model query.
+     *
+     * @return PersonalAccessToken
+     */
+    public function prunable()
+    {
+        return $this->where('last_used_at', '>=', now()->addDays(config('tracker.expires')));
     }
 }

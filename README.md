@@ -10,14 +10,15 @@ It also comes with a trait that introduces three useful methods for your user mo
 
 * [Compatibility](#compatibility)
 * [Installation](#installation)
-  * [Override Sanctum Model](#override-default-model)
-  * [Install User-Agent Parser](#choose-and-install-a-user-agent-parser)
-  * [Use Trait](#add-the-trait)
+  * [Override Sanctum Model](#override-sanctum-model)
+  * [Pruning Outdated Records](#pruning-outdated-records)
+  * [Install a User-Agent Parser](#install-a-user-agent-parser)
+  * [Use the Trait](#use-the-trait)
 * [Usage](#usage)
 * [IP Lookup](#ip-lookup)
-  * [Ip2Location Lite DB3](#ip2location-lite-db3)
+  * [IP2Location Lite](#ip2location-lite)
   * [Custom Provider](#custom-provider)
-  * [Handle Errors](#handle-api-errors)
+  * [Handle Errors](#handle-errors)
 * [Events](#events)
   * [PersonalAccessTokenCreated](#personalaccesstokencreated)
 * [License](#license)
@@ -65,6 +66,18 @@ public function boot()
 {
     Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 }
+```
+
+### Pruning Outdated Records
+
+This package allows you to remove outdated authentication records.
+
+Period for records to expire is described in configuration `tracker.expires`.
+
+Add schedule command to your `Kernel.php`, you can use period as you need
+
+```php
+$schedule->command('model:prune')->everyMinute();
 ```
 
 ### Install a User-Agent Parser

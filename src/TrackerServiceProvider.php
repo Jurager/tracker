@@ -16,11 +16,6 @@ class TrackerServiceProvider extends ServiceProvider
     {
         // Merge default config
         $this->mergeConfigFrom(__DIR__.'/../config/tracker.php', 'tracker');
-
-	    // Register commands
-	    $this->commands([
-		    Commands\Purge::class,
-	    ]);
     }
 
 	/**
