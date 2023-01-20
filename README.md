@@ -1,6 +1,7 @@
 # Jurager/Tracker
 [![Latest Stable Version](https://poser.pugx.org/jurager/tracker/v/stable)](https://packagist.org/packages/jurager/teams)
 [![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/teams)
+[![PHP Version Require](http://poser.pugx.org/jurager/tracker/require/php)](https://packagist.org/packages/jurager/tracker)
 [![License](https://poser.pugx.org/jurager/tracker/license)](https://packagist.org/packages/jurager/teams)
 
 This package allows you to track sanctum tokens by reading the request and recording the IP address, and other metadata to database.
