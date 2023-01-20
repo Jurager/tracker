@@ -14,15 +14,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     use MassPrunable;
 
     /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
-    protected $dates = [
-        'last_used_at',
-    ];
-
-    /**
      * The attributes that should be cast to native types.
      *
      * @var array

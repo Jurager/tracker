@@ -1,14 +1,15 @@
-# Laravel Sanctum Tracker
+# Jurager/Tracker
+[![Latest Stable Version](https://poser.pugx.org/jurager/tracker/v/stable)](https://packagist.org/packages/jurager/teams)
+[![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/teams)
+[![License](https://poser.pugx.org/jurager/tracker/license)](https://packagist.org/packages/jurager/teams)
 
-#### Track Sanctum tokens in Laravel.
-
-This package allows you to track Sanctum tokens by reading the User-Agent and recording the IP address, and adding other metadata.
+This package allows you to track sanctum tokens by reading the request and recording the IP address, and other metadata to database.
 
 With an IP address lookup, you may retrieve even more information, such as the geolocation, by using a supported provider or establishing your own custom providers.
 
 It also comes with a trait that introduces three useful methods for your user model: 'logout,' 'logoutOthers,' and 'logoutAll.'
 
-* [Compatibility](#compatibility)
+* [Requirements](#requirements)
 * [Installation](#installation)
   * [Override Sanctum Model](#override-sanctum-model)
   * [Pruning Outdated Records](#pruning-outdated-records)
@@ -23,25 +24,23 @@ It also comes with a trait that introduces three useful methods for your user mo
   * [PersonalAccessTokenCreated](#personalaccesstokencreated)
 * [License](#license)
 
-## Compatibility
+## Requirements
 
-- This package has been tested with **Laravel 8.x** and **Laravel Sanctum (v2)**.
+`PHP => 8.0` and `Laravel => 8.x` with `Sanctum => 2.0`
 
 ## Installation
-
-Use composer to install the package:
 
 ```bash
 composer require jurager/tracker
 ```
 
-Publish the configuration file with:
+Publish the configuration with:
 
 ```bash
 php artisan vendor:publish --provider="Jurager\Tracker\TrackerServiceProvider" --tag="config"
 ```
 
-Run the migrations to update the `personal_access_tokens` table:
+Run the migrations to update the tables:
 
 ```bash
 php artisan migrate

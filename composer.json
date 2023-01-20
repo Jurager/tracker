@@ -2,13 +2,8 @@
     "name": "jurager/tracker",
     "description": "Track Sanctum tokens in Laravel.",
     "license": "MIT",
+    "keywords": ["laravel", "sanctum", "tracker", "history", "logins", "auth"],
     "authors": [
-        {
-            "name": "Anthony Lajusticia",
-            "email": "anthonylajusticia@gmail.com",
-            "homepage": "https://anthonylajusticia.com",
-            "role": "Developer"
-        },
         {
             "name": "Yuri Gerassimov",
             "email": "jurager01@gmail.com",
@@ -17,12 +12,12 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^8.0|^8.1",
         "guzzlehttp/guzzle": "^7.4",
-        "illuminate/database": "^8.0|^9.0",
-        "illuminate/queue": "^8.0|^9.0",
-        "illuminate/support": "^8.0|^9.0",
-        "laravel/sanctum": "^2.0|^3.0",
+        "illuminate/database": "^8.0|^9.0|^10.0",
+        "illuminate/queue": "^8.0|^9.0|^10.0",
+        "illuminate/support": "^8.0|^9.0|^10.0",
+        "laravel/sanctum": "^2.0|^3.0|^10.0",
         "nesbot/carbon": "^2.55.2"
     },
     "require-dev": {
