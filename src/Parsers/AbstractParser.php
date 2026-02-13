@@ -3,6 +3,7 @@
 namespace Jurager\Tracker\Parsers;
 
 use Illuminate\Support\Facades\Request;
+use Jurager\Tracker\Contracts\ParserContract;
 
 /**
  * Abstract base class for User-Agent parsers.
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Request;
  * }
  * ```
  */
-abstract class AbstractParser implements UserAgentParser
+abstract class AbstractParser implements ParserContract
 {
     protected readonly string $userAgent;
 

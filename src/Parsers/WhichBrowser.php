@@ -2,23 +2,15 @@
 
 namespace Jurager\Tracker\Parsers;
 
-use Illuminate\Support\Facades\Request;
 use WhichBrowser\Parser;
-use Jurager\Tracker\Contracts\ParserContract;
 
-class WhichBrowser implements ParserContract
+class WhichBrowser extends AbstractParser
 {
     protected Parser $parser;
 
-    /**
-     * WhichBrowser constructor.
-     *
-     * @param string|null $userAgent Optional User-Agent string. If not provided, will use current request's User-Agent.
-     */
-    public function __construct(?string $userAgent = null)
+    protected function parse(): void
     {
-        $userAgent = $userAgent ?? Request::userAgent() ?? '';
-        $this->parser = new Parser($userAgent);
+        $this->parser = new Parser($this->userAgent);
     }
 
     /**

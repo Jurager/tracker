@@ -138,7 +138,7 @@ class PersonalAccessTokenTest extends TestCase
         // Create fresh token
         $freshToken = $this->user->createToken('Fresh')->accessToken;
 
-        $prunableQuery = (new PersonalAccessToken)->prunable();
+        $prunableQuery = (new PersonalAccessToken())->prunable();
         $prunable = $prunableQuery->get();
 
         $this->assertCount(1, $prunable);
@@ -154,7 +154,7 @@ class PersonalAccessTokenTest extends TestCase
         $token->created_at = now()->subYears(10);
         $token->save();
 
-        $prunableQuery = (new PersonalAccessToken)->prunable();
+        $prunableQuery = (new PersonalAccessToken())->prunable();
         $prunable = $prunableQuery->get();
 
         $this->assertCount(0, $prunable);
