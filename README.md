@@ -1,4 +1,4 @@
-# Laravel Sanctum Tracker
+# Jurager/Tracker
 
 [![Latest Stable Version](https://poser.pugx.org/jurager/tracker/v/stable)](https://packagist.org/packages/jurager/tracker)
 [![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/tracker)
@@ -27,6 +27,7 @@ Track Laravel Sanctum authentication tokens with detailed metadata including IP 
   - [Querying Tokens](#querying-tokens)
 - [IP Geolocation](#ip-geolocation)
 - [Custom Providers](#custom-providers)
+  - [Custom Parsers](#custom-parsers)
 - [Events](#events)
 - [Testing](#testing)
 - [API Reference](#api-reference)
@@ -222,8 +223,7 @@ if ($token->isExpired()) {
 $token->markAsUsed();
 
 // Check if this is the current token
-$currentToken = $request->user()->currentAccessToken();
-if ($token->isCurrent($currentToken)) {
+if ($token->isCurrent()) {
     // This is the current token
 }
 ```
@@ -272,13 +272,12 @@ echo $token->location; // "San Francisco, California, United States"
 
 ## Custom Providers
 
-Create a custom IP provider by implementing the `Provider` interface:
+Create a custom IP provider by extending `AbstractProvider`:
 
 ```php
 namespace App\IpProviders;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use Jurager\Tracker\Contracts\Provider;
 use Jurager\Tracker\Providers\AbstractProvider;
 
 class MyCustomProvider extends AbstractProvider
@@ -325,6 +324,56 @@ Register in `config/tracker.php`:
     'custom_providers' => [
         'my-provider' => \App\IpProviders\MyCustomProvider::class,
     ],
+],
+```
+
+### Custom Parsers
+
+Create a custom User-Agent parser by extending `AbstractParser`:
+
+```php
+namespace App\Parsers;
+
+use Jurager\Tracker\Parsers\AbstractParser;
+
+class MyCustomParser extends AbstractParser
+{
+    protected $parser;
+
+    protected function parse(): void
+    {
+        // Initialize your parser with $this->userAgent
+        $this->parser = new SomeParserLibrary($this->userAgent);
+    }
+
+    public function getDevice(): ?string
+    {
+        return $this->parser->getDeviceName();
+    }
+
+    public function getDeviceType(): ?string
+    {
+        return $this->parser->getDeviceType();
+    }
+
+    public function getPlatform(): ?string
+    {
+        return $this->parser->getOS();
+    }
+
+    public function getBrowser(): ?string
+    {
+        return $this->parser->getBrowserName();
+    }
+}
+```
+
+Register in `config/tracker.php`:
+
+```php
+'parser' => 'my-parser',
+'custom_parsers' => [
+    'my-parser' => \App\Parsers\MyCustomParser::class,
 ],
 ```
 
@@ -438,7 +487,7 @@ class MyTest extends TestCase
 | `byDevice(string $type)` | Filter by device type (desktop, mobile, tablet, phone) |
 | `byPlatform(string $platform)` | Filter by platform (iOS, Android, Windows, macOS, etc.) |
 | `byCountry(string $country)` | Filter by country name |
-| `logout(?int $tokenId = null)` | Logout from current or specific device |
+| `logout(int\|string\|null $tokenId = null)` | Logout from current or specific device |
 | `logoutOthers()` | Logout from all other devices |
 | `logoutAll()` | Logout from all devices |
 
@@ -448,7 +497,7 @@ class MyTest extends TestCase
 |--------|-------------|
 | `isExpired()` | Check if token is expired based on config |
 | `revoke()` | Delete/revoke the token |
-| `isCurrent(?self $token)` | Check if this is the current token |
+| `isCurrent()` | Check if this is the current token (via Request::user()) |
 | `markAsUsed()` | Update last_used_at timestamp |
 | `location` | Get formatted location string (accessor) |
 

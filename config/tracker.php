@@ -11,12 +11,28 @@ return [
     | You will need to install the package of the corresponding parser.
     |
     | Supported values:
-    | 'agent' (see https://github.com/jenssegers/agent)
-    | 'whichbrowser' (see https://github.com/WhichBrowser/Parser-PHP)
+    | - 'agent' (see https://github.com/jenssegers/agent)
+    | - 'whichbrowser' (see https://github.com/WhichBrowser/Parser-PHP)
+    | - any other custom name declared as a key of the custom_parsers array
     |
     */
 
-    'parser' => 'whichbrowser',
+    'parser' => 'agent',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Parsers
+    |--------------------------------------------------------------------------
+    |
+    | You can create your own custom parsers for User-Agent parsing.
+    | See in the README file how to create a parser class and declare it
+    | in the array below.
+    |
+    | Format: 'name_of_your_parser' => ParserClassName::class
+    |
+    */
+
+    'custom_parsers' => [],
 
     /*
     |--------------------------------------------------------------------------

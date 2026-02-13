@@ -17,7 +17,7 @@ class ProviderFactory
      * @param string|false|null $name
      * @param string|null $ip Optional IP address to lookup
      * @return ProviderContract|null
-     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
+     * @throws ProviderException|CustomProviderException|\GuzzleHttp\Exception\GuzzleException
      */
     public static function build(string|false|null $name, ?string $ip = null): ?ProviderContract
     {
@@ -25,26 +25,42 @@ class ProviderFactory
             return null;
         }
 
-        // Check for custom provider
-        $customProviders = config('tracker.lookup.custom_providers', []);
-        if (isset($customProviders[$name])) {
-            $providerClass = $customProviders[$name];
-
-            if (!is_a($providerClass, ProviderContract::class, true)) {
-                throw new CustomProviderException(
-                    "Custom IP provider {$providerClass} must implement " . ProviderContract::class
-                );
-            }
-
-            return new $providerClass($ip);
-        }
-
-        // Use officially supported provider
         return match ($name) {
             'ip2location-lite' => new LocationLite($ip),
             'ip-api' => new IpApi($ip),
-            default => throw new ProviderException("Unsupported IP provider: {$name}"),
+            default => self::buildCustomProvider($name, $ip),
         };
+    }
+
+    /**
+     * Build a custom provider from configuration.
+     *
+     * @param string|null $name
+     * @param string|null $ip
+     * @return ProviderContract
+     * @throws ProviderException|CustomProviderException
+     */
+    protected static function buildCustomProvider(?string $name, ?string $ip = null): ProviderContract
+    {
+        $customProviders = config('tracker.lookup.custom_providers', []);
+
+        if (!isset($customProviders[$name])) {
+            throw new ProviderException("Unsupported IP provider: {$name}. Choose 'ip2location-lite', 'ip-api', or define a custom provider in config.");
+        }
+
+        $providerClass = $customProviders[$name];
+
+        if (!class_exists($providerClass)) {
+            throw new CustomProviderException("Custom provider class not found: {$providerClass}");
+        }
+
+        if (!is_a($providerClass, ProviderContract::class, true)) {
+            throw new CustomProviderException(
+                "Custom IP provider {$providerClass} must implement " . ProviderContract::class
+            );
+        }
+
+        return new $providerClass($ip);
     }
 
     /**

@@ -5,7 +5,7 @@ namespace Jurager\Tracker\Tests\Unit;
 use Jurager\Tracker\Contracts\ParserContract;
 use Jurager\Tracker\Exceptions\CustomProviderException;
 use Jurager\Tracker\Exceptions\ProviderException;
-use Jurager\Tracker\Factories\UserAgentParserFactory;
+use Jurager\Tracker\Factories\ParserFactory;
 use Jurager\Tracker\Factories\ProviderFactory;
 use Jurager\Tracker\Parsers\Agent;
 use Jurager\Tracker\Tests\TestCase;
@@ -15,7 +15,7 @@ class FactoriesTest extends TestCase
     /** @test */
     public function parser_factory_creates_agent_parser(): void
     {
-        $parser = UserAgentParserFactory::build('agent');
+        $parser = ParserFactory::build('agent');
 
         $this->assertInstanceOf(Agent::class, $parser);
         $this->assertInstanceOf(ParserContract::class, $parser);
@@ -24,10 +24,10 @@ class FactoriesTest extends TestCase
     /** @test */
     public function parser_factory_throws_exception_for_unsupported_parser(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(\Jurager\Tracker\Exceptions\ParserException::class);
         $this->expectExceptionMessage("Unsupported User-Agent parser: invalid");
 
-        UserAgentParserFactory::build('invalid');
+        ParserFactory::build('invalid');
     }
 
     /** @test */

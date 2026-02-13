@@ -5,7 +5,7 @@ namespace Jurager\Tracker\Support;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Jurager\Tracker\Factories\ProviderFactory;
 use Jurager\Tracker\Contracts\ProviderContract;
-use Jurager\Tracker\Factories\UserAgentParserFactory;
+use Jurager\Tracker\Factories\ParserFactory;
 use Jurager\Tracker\Contracts\ParserContract;
 use Illuminate\Support\Facades\Request;
 
@@ -40,7 +40,7 @@ class RequestContext
 
         try {
             // Initialize the parser with the current User-Agent
-            $this->parser = UserAgentParserFactory::build(config('tracker.parser'), $this->userAgent);
+            $this->parser = ParserFactory::build(config('tracker.parser'), $this->userAgent);
 
             // Initialize the IP provider with the current IP
             $this->ipProvider = ProviderFactory::build(config('tracker.lookup.provider'), $this->ip);
