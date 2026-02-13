@@ -1,15 +1,11 @@
 <?php
 
-namespace Jurager\Tracker\IpProviders;
+namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use Illuminate\Support\Facades\Request;
-
-use Jurager\Tracker\IpProviders\AbstractProvider;
 
 class IpApi extends AbstractProvider
 {
-
     /**
      * Get the Guzzle request.
      *
@@ -17,12 +13,11 @@ class IpApi extends AbstractProvider
      */
     public function getRequest(): GuzzleRequest
     {
-        $ip = Request::ip() ?? '127.0.0.1';
         $locale = config('app.locale', 'en');
 
         return new GuzzleRequest(
             'GET',
-            "http://ip-api.com/json/{$ip}?fields=25&lang={$locale}"
+            "http://ip-api.com/json/{$this->ip}?fields=25&lang={$locale}"
         );
     }
 

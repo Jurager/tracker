@@ -91,6 +91,20 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Retries
+        |--------------------------------------------------------------------------
+        |
+        | Number of retry attempts for failed IP lookup API calls.
+        | Uses exponential backoff between attempts (100ms, 200ms, 400ms, etc).
+        |
+        | Set to 1 to disable retries (only one attempt will be made).
+        |
+        */
+
+        'retries' => 2,
+
+        /*
+        |--------------------------------------------------------------------------
         | Environments
         |--------------------------------------------------------------------------
         |

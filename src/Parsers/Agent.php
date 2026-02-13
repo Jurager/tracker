@@ -2,8 +2,8 @@
 
 namespace Jurager\Tracker\Parsers;
 
+use Illuminate\Support\Facades\Request;
 use Jenssegers\Agent\Agent as Parser;
-
 use Jurager\Tracker\Contracts\UserAgentParser;
 
 class Agent implements UserAgentParser
@@ -12,10 +12,13 @@ class Agent implements UserAgentParser
 
     /**
      * Agent constructor.
+     *
+     * @param string|null $userAgent Optional User-Agent string. If not provided, will use current request's User-Agent.
      */
-    public function __construct()
+    public function __construct(?string $userAgent = null)
     {
         $this->parser = new Parser();
+        $this->parser->setUserAgent($userAgent ?? Request::userAgent() ?? '');
     }
 
     /**

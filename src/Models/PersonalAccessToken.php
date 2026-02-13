@@ -2,7 +2,7 @@
 
 namespace Jurager\Tracker\Models;
 
-use Jurager\Tracker\Events\PersonalAccessTokenCreated;
+use Jurager\Tracker\Events\TokenCreated;
 use Jurager\Tracker\Support\RequestContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Request;
@@ -62,7 +62,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     {
         static::creating(function (self $personalAccessToken): void {
             // Get as much information as possible about the request
-            $context = new RequestContext();
+            $context = RequestContext::current();
 
             $parser = $context->parser();
 
@@ -96,7 +96,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
             }
 
             // Dispatch event
-            event(new PersonalAccessTokenCreated($personalAccessToken, $context));
+            event(new TokenCreated($personalAccessToken, $context));
         });
     }
 
@@ -160,5 +160,54 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
                         ->where('created_at', '<=', $expiryDate);
                 });
         });
+    }
+
+    /**
+     * Check if the token is expired based on config.
+     *
+     * @return bool
+     */
+    public function isExpired(): bool
+    {
+        $expires = (int) config('tracker.expires', 0);
+
+        if ($expires <= 0) {
+            return false;
+        }
+
+        $expiryDate = now()->subDays($expires);
+        $lastActivity = $this->last_used_at ?? $this->created_at;
+
+        return $lastActivity && $lastActivity->lte($expiryDate);
+    }
+
+    /**
+     * Revoke (delete) the token.
+     *
+     * @return bool
+     */
+    public function revoke(): bool
+    {
+        return (bool) $this->delete();
+    }
+
+    /**
+     * Check if this token is the current one being used.
+     *
+     * @return bool
+     */
+    public function isCurrent(): bool
+    {
+        return $this->getIsCurrentAttribute();
+    }
+
+    /**
+     * Mark the token as used.
+     *
+     * @return bool
+     */
+    public function markAsUsed(): bool
+    {
+        return $this->forceFill(['last_used_at' => now()])->save();
     }
 }

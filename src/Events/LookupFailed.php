@@ -5,7 +5,7 @@ namespace Jurager\Tracker\Events;
 use GuzzleHttp\Exception\TransferException;
 use Illuminate\Queue\SerializesModels;
 
-class IpLookupFailed
+class LookupFailed
 {
     use SerializesModels;
 

@@ -2,7 +2,7 @@
 
 namespace Jurager\Tracker\Traits;
 
-use Jurager\Tracker\Events\IpLookupFailed;
+use Jurager\Tracker\Events\LookupFailed;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Illuminate\Support\Collection;
@@ -14,23 +14,6 @@ trait MakesHttpCalls
     protected ?Collection $result = null;
 
     /**
-     * Initialize HTTP client and make the API call.
-     *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function __construct()
-    {
-        $timeout = config('tracker.lookup.timeout', 1.0);
-
-        $this->httpClient = new Client([
-            'connect_timeout' => $timeout,
-            'timeout' => $timeout,
-        ]);
-
-        $this->result = $this->makeApiCall();
-    }
-
-    /**
      * Make the API call and get the response as a Laravel collection.
      *
      * @return Collection|null
@@ -38,18 +21,37 @@ trait MakesHttpCalls
      */
     protected function makeApiCall(): ?Collection
     {
-        try {
-            $response = $this->httpClient->send($this->getRequest());
+        $retries = config('tracker.lookup.retries', 2);
+        $attempt = 0;
+        $exception = null;
 
-            $data = json_decode($response->getBody()->getContents(), true);
+        while ($attempt < $retries) {
+            try {
+                $response = $this->httpClient->send($this->getRequest());
 
-            return $data ? collect($data) : null;
+                $data = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
-        } catch (TransferException $e) {
-            Event::dispatch(new IpLookupFailed($e));
+                return $data ? collect($data) : null;
 
-            return null;
+            } catch (TransferException $e) {
+                $exception = $e;
+                $attempt++;
+
+                // If not the last attempt, wait before retrying with exponential backoff
+                if ($attempt < $retries) {
+                    usleep(100000 * (2 ** ($attempt - 1))); // 100ms, 200ms, 400ms, etc.
+                }
+            } catch (\JsonException $e) {
+                Event::dispatch(new LookupFailed($exception, $this->ip ?? null));
+            }
         }
+
+        // All attempts failed, dispatch event with the last exception
+        if ($exception) {
+            Event::dispatch(new LookupFailed($exception, $this->ip ?? null));
+        }
+
+        return null;
     }
 
     /**

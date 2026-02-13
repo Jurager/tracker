@@ -2,6 +2,7 @@
 
 namespace Jurager\Tracker\Support;
 
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Jurager\Tracker\Factories\IpProviderFactory;
 use Jurager\Tracker\Contracts\IpProvider;
 use Jurager\Tracker\Factories\UserAgentParserFactory;
@@ -13,7 +14,19 @@ class RequestContext
     protected UserAgentParser $parser;
     protected ?IpProvider $ipProvider = null;
     public ?string $userAgent;
+
     public ?string $ip;
+
+    /**
+     * Get or create a singleton instance for the current request.
+     *
+     * @return static
+     * @throws BindingResolutionException
+    */
+    public static function current(): static
+    {
+        return app()->make(static::class);
+    }
 
     /**
      * RequestContext constructor.
@@ -22,14 +35,19 @@ class RequestContext
      */
     public function __construct()
     {
-        // Initialize the parser
-        $this->parser = UserAgentParserFactory::build(config('tracker.parser'));
-
-        // Initialize the IP provider
-        $this->ipProvider = IpProviderFactory::build(config('tracker.lookup.provider'));
-
         $this->userAgent = Request::userAgent();
         $this->ip = Request::ip();
+
+        try {
+            // Initialize the parser with the current User-Agent
+            $this->parser = UserAgentParserFactory::build(config('tracker.parser'), $this->userAgent);
+
+            // Initialize the IP provider with the current IP
+            $this->ipProvider = IpProviderFactory::build(config('tracker.lookup.provider'), $this->ip);
+        } catch (\Exception $e) {
+            // Log error but don't fail token creation
+            report($e);
+        }
     }
 
     /**

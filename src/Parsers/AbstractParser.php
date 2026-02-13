@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Request;
  *
  * Example:
  * ```php
- * class MyCustomParser extends AbstractUserAgentParser
+ * class MyCustomParser extends AbstractParser
  * {
  *     protected function parse(): void
  *     {
@@ -29,16 +29,18 @@ use Illuminate\Support\Facades\Request;
  * }
  * ```
  */
-abstract class AbstractUserAgentParser implements UserAgentParser
+abstract class AbstractParser implements UserAgentParser
 {
     protected string $userAgent;
 
     /**
      * Initialize the parser with the User-Agent string.
+     *
+     * @param string|null $userAgent Optional User-Agent string. If not provided, will use current request's User-Agent.
      */
-    public function __construct()
+    public function __construct(?string $userAgent = null)
     {
-        $this->userAgent = Request::userAgent() ?? '';
+        $this->userAgent = $userAgent ?? Request::userAgent() ?? '';
         $this->parse();
     }
 

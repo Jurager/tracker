@@ -15,6 +15,9 @@ class TrackerServiceProvider extends ServiceProvider
     {
         // Merge default config
         $this->mergeConfigFrom(__DIR__.'/../config/tracker.php', 'tracker');
+
+        // Register RequestContext as a singleton per request
+        $this->app->singleton(Support\RequestContext::class);
     }
 
     /**

@@ -25,7 +25,7 @@ It also comes with a trait that introduces three useful methods for your user mo
   * [Custom Provider](#custom-provider)
   * [Handle Errors](#handle-errors)
 * [Events](#events)
-  * [PersonalAccessTokenCreated](#personalaccesstokencreated)
+  * [TokenCreated](#tokencreated)
 * [License](#license)
 
 ## Requirements
@@ -244,9 +244,9 @@ This event can be listened to in order to add your own logic.
 
 ## Events
 
-### PersonalAccessTokenCreated
+### TokenCreated
 
-You can listen to the `Jurager/Tracker/Events/PersonalAccessTokenCreated` event on a new login.
+You can listen to the `Jurager/Tracker/Events/TokenCreated` event on a new login.
 
 It has a `personalAccessToken` property, which has the newly created `Jurager/Tracker/Models/PersonalAccessToken` and a `context` property, which receives a `Jurager/Tracker/RequestContext` which contains all the data collected on the request.
 

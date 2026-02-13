@@ -5,7 +5,7 @@ namespace Jurager\Tracker\Exceptions;
 use Exception;
 use Throwable;
 
-class IpProviderException extends Exception
+class ProviderException extends Exception
 {
     public function __construct(
         string $message = 'Choose a supported IP address lookup provider.',

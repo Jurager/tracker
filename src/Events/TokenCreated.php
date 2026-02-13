@@ -6,7 +6,7 @@ use Jurager\Tracker\Models\PersonalAccessToken;
 use Jurager\Tracker\Support\RequestContext;
 use Illuminate\Queue\SerializesModels;
 
-class PersonalAccessTokenCreated
+class TokenCreated
 {
     use SerializesModels;
 

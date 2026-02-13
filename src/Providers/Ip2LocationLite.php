@@ -1,34 +1,39 @@
 <?php
 
-namespace Jurager\Tracker\IpProviders;
+namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
-
 use Jurager\Tracker\Contracts\IpProvider;
 
 class Ip2LocationLite implements IpProvider
 {
+    protected string $ip;
     protected ?object $result = null;
 
-    public function __construct()
+    /**
+     * Ip2LocationLite constructor.
+     *
+     * @param string|null $ip The IP address to lookup. If not provided, will use current request's IP.
+     */
+    public function __construct(?string $ip = null)
     {
-        $ip = Request::ip();
+        $this->ip = $ip ?? Request::ip() ?? '127.0.0.1';
 
-        if (!$ip) {
+        if (!$this->ip || $this->ip === '127.0.0.1') {
             return;
         }
 
-        $isIpv6 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
+        $isIpv6 = filter_var($this->ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
 
         $table = $isIpv6
             ? config('tracker.lookup.ip2location.ipv6_table', 'ip2location_db3_ipv6')
             : config('tracker.lookup.ip2location.ipv4_table', 'ip2location_db3');
 
         $this->result = DB::table($table)
-            ->whereRaw('INET_ATON(?) <= ip_to', [$ip])
+            ->whereRaw('INET_ATON(?) <= ip_to', [$this->ip])
             ->first();
     }
 
