@@ -2,7 +2,7 @@
 
 namespace Jurager\Tracker\Contracts;
 
-interface UserAgentParser
+interface ParserContract
 {
     /**
      * Get the device name.

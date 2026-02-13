@@ -4,9 +4,9 @@ namespace Jurager\Tracker\Parsers;
 
 use Illuminate\Support\Facades\Request;
 use WhichBrowser\Parser;
-use Jurager\Tracker\Contracts\UserAgentParser;
+use Jurager\Tracker\Contracts\ParserContract;
 
-class WhichBrowser implements UserAgentParser
+class WhichBrowser implements ParserContract
 {
     protected Parser $parser;
 
@@ -30,7 +30,7 @@ class WhichBrowser implements UserAgentParser
     {
         $device = trim($this->parser->device->toString());
 
-        return $device ?: $this->getDeviceByManufacturerAndModel();
+        return $device !== '' ? $device : $this->getDeviceByManufacturerAndModel();
     }
 
     /**
@@ -40,12 +40,13 @@ class WhichBrowser implements UserAgentParser
      */
     protected function getDeviceByManufacturerAndModel(): ?string
     {
-        $manufacturer = $this->parser->device->getManufacturer() ?? '';
-        $model = $this->parser->device->getModel() ?? '';
+        $device = trim(sprintf(
+            '%s %s',
+            $this->parser->device->getManufacturer() ?? '',
+            $this->parser->device->getModel() ?? ''
+        ));
 
-        $device = trim("{$manufacturer} {$model}");
-
-        return $device ?: null;
+        return $device !== '' ? $device : null;
     }
 
     /**
@@ -55,9 +56,9 @@ class WhichBrowser implements UserAgentParser
      */
     public function getDeviceType(): ?string
     {
-        $type = $this->parser->device->type ?? '';
+        $type = trim($this->parser->device->type ?? '');
 
-        return trim($type) ?: null;
+        return $type !== '' ? $type : null;
     }
 
     /**
@@ -67,7 +68,9 @@ class WhichBrowser implements UserAgentParser
      */
     public function getPlatform(): ?string
     {
-        return trim($this->parser->os->toString()) ?: null;
+        $platform = trim($this->parser->os->toString());
+
+        return $platform !== '' ? $platform : null;
     }
 
     /**

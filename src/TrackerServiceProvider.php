@@ -29,10 +29,10 @@ class TrackerServiceProvider extends ServiceProvider
     {
         // Publish config
         $this->publishes([
-            __DIR__.'/../config/tracker.php' => config_path('tracker.php')
+            __DIR__ . '/../config/tracker.php' => config_path('tracker.php')
         ], 'config');
 
         // Load migrations
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }

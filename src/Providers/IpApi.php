@@ -4,7 +4,7 @@ namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 
-class IpApi extends AbstractProvider
+class IpApi extends AbstractProviderContract
 {
     /**
      * Get the Guzzle request.
@@ -14,11 +14,9 @@ class IpApi extends AbstractProvider
     public function getRequest(): GuzzleRequest
     {
         $locale = config('app.locale', 'en');
+        $url = sprintf('http://ip-api.com/json/%s?fields=25&lang=%s', $this->ip, $locale);
 
-        return new GuzzleRequest(
-            'GET',
-            "http://ip-api.com/json/{$this->ip}?fields=25&lang={$locale}"
-        );
+        return new GuzzleRequest('GET', $url);
     }
 
     /**

@@ -86,11 +86,11 @@ trait Trackable
      */
     public function logout(int|string|null $personalAccessTokenId = null): bool
     {
-        $personalAccessToken = $personalAccessTokenId
+        $token = $personalAccessTokenId
             ? $this->tokens()->find($personalAccessTokenId)
             : $this->currentAccessToken();
 
-        return $personalAccessToken ? (bool) $personalAccessToken->delete() : false;
+        return (bool) $token?->delete();
     }
 
     /**
@@ -102,11 +102,9 @@ trait Trackable
     {
         $currentToken = $this->currentAccessToken();
 
-        if (!$currentToken) {
-            return false;
-        }
-
-        return (bool) $this->tokens()->where('id', '<>', $currentToken->id)->delete();
+        return $currentToken
+            ? (bool) $this->tokens()->where('id', '<>', $currentToken->id)->delete()
+            : false;
     }
 
     /**

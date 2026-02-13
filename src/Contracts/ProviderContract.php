@@ -5,7 +5,7 @@ namespace Jurager\Tracker\Contracts;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;
 
-interface IpProvider
+interface ProviderContract
 {
     /**
      * Get the Guzzle request.

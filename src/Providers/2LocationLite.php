@@ -6,11 +6,11 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
-use Jurager\Tracker\Contracts\IpProvider;
+use Jurager\Tracker\Contracts\ProviderContract;
 
-class Ip2LocationLite implements IpProvider
+class LocationLite implements ProviderContract
 {
-    protected string $ip;
+    protected readonly string $ip;
     protected ?object $result = null;
 
     /**
@@ -22,7 +22,9 @@ class Ip2LocationLite implements IpProvider
     {
         $this->ip = $ip ?? Request::ip() ?? '127.0.0.1';
 
-        if (!$this->ip || $this->ip === '127.0.0.1') {
+        // Skip lookup for localhost or invalid IP
+        if ($this->ip === '127.0.0.1' || !filter_var($this->ip, FILTER_VALIDATE_IP)) {
+            $this->result = null;
             return;
         }
 
@@ -32,8 +34,11 @@ class Ip2LocationLite implements IpProvider
             ? config('tracker.lookup.ip2location.ipv6_table', 'ip2location_db3_ipv6')
             : config('tracker.lookup.ip2location.ipv4_table', 'ip2location_db3');
 
+        // Use appropriate IP conversion function based on IP version
+        $ipFunction = $isIpv6 ? 'INET6_ATON' : 'INET_ATON';
+
         $this->result = DB::table($table)
-            ->whereRaw('INET_ATON(?) <= ip_to', [$this->ip])
+            ->whereRaw("{$ipFunction}(?) <= ip_to", [$this->ip])
             ->first();
     }
 

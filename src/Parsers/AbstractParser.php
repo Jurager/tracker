@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Request;
  */
 abstract class AbstractParser implements UserAgentParser
 {
-    protected string $userAgent;
+    protected readonly string $userAgent;
 
     /**
      * Initialize the parser with the User-Agent string.

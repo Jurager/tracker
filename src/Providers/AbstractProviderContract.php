@@ -3,7 +3,7 @@
 namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Exception\GuzzleException;
-use Jurager\Tracker\Contracts\IpProvider;
+use Jurager\Tracker\Contracts\ProviderContract;
 use Jurager\Tracker\Traits\MakesHttpCalls;
 
 /**
@@ -30,11 +30,11 @@ use Jurager\Tracker\Traits\MakesHttpCalls;
  * }
  * ```
  */
-abstract class AbstractProvider implements IpProvider
+abstract class AbstractProviderContract implements ProviderContract
 {
     use MakesHttpCalls;
 
-    protected string $ip;
+    protected readonly string $ip;
 
     /**
      * Initialize the IP provider.
@@ -48,8 +48,6 @@ abstract class AbstractProvider implements IpProvider
     public function __construct(?string $ip = null)
     {
         $this->ip = $ip ?? \Illuminate\Support\Facades\Request::ip() ?? '127.0.0.1';
-
-        // Now call MakesHttpCalls trait constructor
         $this->initializeHttpClient();
     }
 
@@ -61,7 +59,7 @@ abstract class AbstractProvider implements IpProvider
      */
     protected function initializeHttpClient(): void
     {
-        $timeout = config('tracker.lookup.timeout', 1.0);
+        $timeout = (float) config('tracker.lookup.timeout', 1.0);
 
         $this->httpClient = new \GuzzleHttp\Client([
             'connect_timeout' => $timeout,

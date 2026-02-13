@@ -3,16 +3,16 @@
 namespace Jurager\Tracker\Support;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Jurager\Tracker\Factories\IpProviderFactory;
-use Jurager\Tracker\Contracts\IpProvider;
+use Jurager\Tracker\Factories\ProviderFactory;
+use Jurager\Tracker\Contracts\ProviderContract;
 use Jurager\Tracker\Factories\UserAgentParserFactory;
-use Jurager\Tracker\Contracts\UserAgentParser;
+use Jurager\Tracker\Contracts\ParserContract;
 use Illuminate\Support\Facades\Request;
 
 class RequestContext
 {
-    protected UserAgentParser $parser;
-    protected ?IpProvider $ipProvider = null;
+    protected ParserContract $parser;
+    protected ?ProviderContract $ipProvider = null;
     public ?string $userAgent;
 
     public ?string $ip;
@@ -43,7 +43,7 @@ class RequestContext
             $this->parser = UserAgentParserFactory::build(config('tracker.parser'), $this->userAgent);
 
             // Initialize the IP provider with the current IP
-            $this->ipProvider = IpProviderFactory::build(config('tracker.lookup.provider'), $this->ip);
+            $this->ipProvider = ProviderFactory::build(config('tracker.lookup.provider'), $this->ip);
         } catch (\Exception $e) {
             // Log error but don't fail token creation
             report($e);
@@ -53,9 +53,9 @@ class RequestContext
     /**
      * Get the parser used to parse the User-Agent header.
      *
-     * @return UserAgentParser
+     * @return ParserContract
      */
-    public function parser(): UserAgentParser
+    public function parser(): ParserContract
     {
         return $this->parser;
     }
@@ -63,14 +63,10 @@ class RequestContext
     /**
      * Get the IP lookup result.
      *
-     * @return IpProvider|null
+     * @return ProviderContract|null
      */
-    public function ip(): ?IpProvider
+    public function ip(): ?ProviderContract
     {
-        if ($this->ipProvider && $this->ipProvider->getResult()) {
-            return $this->ipProvider;
-        }
-
-        return null;
+        return ($this->ipProvider?->getResult() !== null) ? $this->ipProvider : null;
     }
 }

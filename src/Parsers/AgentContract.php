@@ -4,9 +4,9 @@ namespace Jurager\Tracker\Parsers;
 
 use Illuminate\Support\Facades\Request;
 use Jenssegers\Agent\Agent as Parser;
-use Jurager\Tracker\Contracts\UserAgentParser;
+use Jurager\Tracker\Contracts\ParserContract;
 
-class Agent implements UserAgentParser
+class AgentContract implements ParserContract
 {
     protected Parser $parser;
 
@@ -30,7 +30,10 @@ class Agent implements UserAgentParser
     {
         $device = $this->parser->device();
 
-        return $device && $device !== 'WebKit' ? $device : null;
+        return match ($device) {
+            null, '', 'WebKit' => null,
+            default => $device,
+        };
     }
 
     /**
@@ -40,19 +43,13 @@ class Agent implements UserAgentParser
      */
     public function getDeviceType(): ?string
     {
-        if ($this->parser->isDesktop()) {
-            return 'desktop';
-        }
-
-        if ($this->parser->isMobile()) {
-            return match (true) {
-                $this->parser->isTablet() => 'tablet',
-                $this->parser->isPhone() => 'phone',
-                default => 'mobile',
-            };
-        }
-
-        return null;
+        return match (true) {
+            $this->parser->isDesktop() => 'desktop',
+            $this->parser->isTablet() => 'tablet',
+            $this->parser->isPhone() => 'phone',
+            $this->parser->isMobile() => 'mobile',
+            default => null,
+        };
     }
 
     /**

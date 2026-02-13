@@ -22,27 +22,25 @@ trait MakesHttpCalls
     protected function makeApiCall(): ?Collection
     {
         $retries = config('tracker.lookup.retries', 2);
-        $attempt = 0;
         $exception = null;
 
-        while ($attempt < $retries) {
+        for ($attempt = 0; $attempt < $retries; $attempt++) {
             try {
                 $response = $this->httpClient->send($this->getRequest());
-
                 $data = json_decode($response->getBody()->getContents(), true, 512, JSON_THROW_ON_ERROR);
 
                 return $data ? collect($data) : null;
 
             } catch (TransferException $e) {
                 $exception = $e;
-                $attempt++;
 
-                // If not the last attempt, wait before retrying with exponential backoff
-                if ($attempt < $retries) {
-                    usleep(100000 * (2 ** ($attempt - 1))); // 100ms, 200ms, 400ms, etc.
+                // Wait before retrying with exponential backoff (except on last attempt)
+                if ($attempt < $retries - 1) {
+                    usleep(100_000 * (2 ** $attempt)); // 100ms, 200ms, 400ms, etc.
                 }
             } catch (\JsonException $e) {
-                Event::dispatch(new LookupFailed($exception, $this->ip ?? null));
+                Event::dispatch(new LookupFailed($e, $this->ip ?? null));
+                return null;
             }
         }
 

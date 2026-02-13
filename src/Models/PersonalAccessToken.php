@@ -61,7 +61,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     protected static function booted(): void
     {
         static::creating(function (self $personalAccessToken): void {
-            // Get as much information as possible about the request
+
             $context = RequestContext::current();
 
             $parser = $context->parser();
@@ -75,19 +75,18 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
                 'browser'     => $parser->getBrowser(),
             ]);
 
-            // If we have the IP geolocation data
-            $ipProvider = $context->ip();
+            $provider = $context->ip();
 
-            if ($ipProvider) {
+            if ($provider) {
                 $personalAccessToken->forceFill([
-                    'city'    => $ipProvider->getCity(),
-                    'region'  => $ipProvider->getRegion(),
-                    'country' => $ipProvider->getCountry(),
+                    'city'    => $provider->getCity(),
+                    'region'  => $provider->getRegion(),
+                    'country' => $provider->getCountry(),
                 ]);
 
                 // Custom additional data?
-                if (method_exists($ipProvider, 'getCustomData')) {
-                    $customData = $ipProvider->getCustomData();
+                if (method_exists($provider, 'getCustomData')) {
+                    $customData = $provider->getCustomData();
 
                     if ($customData) {
                         $personalAccessToken->ip_data = $customData;
@@ -95,7 +94,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
                 }
             }
 
-            // Dispatch event
             event(new TokenCreated($personalAccessToken, $context));
         });
     }
@@ -107,13 +105,9 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      */
     public function getLocationAttribute(): ?string
     {
-        $location = array_filter([
-            $this->city,
-            $this->region,
-            $this->country,
-        ]);
+        $parts = array_filter([$this->city, $this->region, $this->country]);
 
-        return $location ? implode(', ', $location) : null;
+        return $parts !== [] ? implode(', ', $parts) : null;
     }
 
     /**
@@ -123,43 +117,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      */
     public function getIsCurrentAttribute(): bool
     {
-        $user = Request::user();
-
-        if (!$user) {
-            return false;
-        }
-
-        $currentToken = $user->currentAccessToken();
-
-        return $currentToken && $this->id === $currentToken->id;
-    }
-
-    /**
-     * Get the prunable model query.
-     *
-     * @return Builder
-     */
-    public function prunable(): Builder
-    {
-        $expires = (int) config('tracker.expires', 0);
-
-        // If pruning is disabled, return a query that matches nothing
-        if ($expires <= 0) {
-            return $this->whereNull('id');
-        }
-
-        $expiryDate = now()->subDays($expires);
-
-        // Return tokens that:
-        // 1. Have been used, but not recently (last_used_at is old)
-        // 2. Have never been used, but were created long ago (created_at is old)
-        return $this->where(function (Builder $query) use ($expiryDate) {
-            $query->where('last_used_at', '<=', $expiryDate)
-                ->orWhere(function (Builder $query) use ($expiryDate) {
-                    $query->whereNull('last_used_at')
-                        ->where('created_at', '<=', $expiryDate);
-                });
-        });
+        return $this->id === Request::user()?->currentAccessToken()?->id;
     }
 
     /**
@@ -175,10 +133,9 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
             return false;
         }
 
-        $expiryDate = now()->subDays($expires);
         $lastActivity = $this->last_used_at ?? $this->created_at;
 
-        return $lastActivity && $lastActivity->lte($expiryDate);
+        return $lastActivity?->lte(now()->subDays($expires)) ?? false;
     }
 
     /**
@@ -209,5 +166,33 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     public function markAsUsed(): bool
     {
         return $this->forceFill(['last_used_at' => now()])->save();
+    }
+
+    /**
+     * Get the prunable model query.
+     *
+     * @return Builder
+     */
+    public function prunable(): Builder
+    {
+        $expires = (int) config('tracker.expires', 0);
+
+        // If pruning is disabled, return a query that matches nothing
+        if ($expires <= 0) {
+            return $this->whereNull('id');
+        }
+
+        $expiryDate = now()->subDays($expires);
+
+        // Return tokens that:
+        // 1. Have been used, but not recently (last_used_at is old)
+        // 2. Have never been used, but were created long ago (created_at is old)
+        return $this->where(function (Builder $query) use ($expiryDate) {
+            $query->where('last_used_at', '<=', $expiryDate)
+                ->orWhere(function (Builder $query) use ($expiryDate) {
+                    $query->whereNull('last_used_at')
+                        ->where('created_at', '<=', $expiryDate);
+                });
+        });
     }
 }
