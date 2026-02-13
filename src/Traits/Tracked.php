@@ -2,31 +2,34 @@
 
 namespace Jurager\Tracker\Traits;
 
-trait Tracked
-{
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Jurager\Tracker\Models\PersonalAccessToken;
 
-     /**
+trait Trackable
+{
+    /**
      * Get all logins history
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     * @return MorphMany
      */
-	public function logins(): \Illuminate\Database\Eloquent\Relations\MorphMany
-	{
-		return $this->morphMany(\Jurager\Tracker\Models\PersonalAccessToken::class, 'tokenable');
-	}
-
+    public function logins(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
+    }
 
     /**
      * Revoke an access token by its ID.
      *
-     * @param mixed $personalAccessTokenId
+     * @param int|string|null $personalAccessTokenId
      * @return bool
      */
-    public function logout($personalAccessTokenId = null)
+    public function logout(int|string|null $personalAccessTokenId = null): bool
     {
-        $personalAccessToken = $personalAccessTokenId ? $this->tokens()->find($personalAccessTokenId) : $this->currentAccessToken();
+        $personalAccessToken = $personalAccessTokenId
+            ? $this->tokens()->find($personalAccessTokenId)
+            : $this->currentAccessToken();
 
-        return $personalAccessToken ? !empty($personalAccessToken->delete()) : false;
+        return $personalAccessToken ? (bool) $personalAccessToken->delete() : false;
     }
 
     /**
@@ -34,9 +37,15 @@ trait Tracked
      *
      * @return bool
      */
-    public function logoutOthers()
+    public function logoutOthers(): bool
     {
-        return $this->currentAccessToken() ? !empty($this->tokens()->where('id', '<>', $this->currentAccessToken()->id)->delete()) : false;
+        $currentToken = $this->currentAccessToken();
+
+        if (!$currentToken) {
+            return false;
+        }
+
+        return (bool) $this->tokens()->where('id', '<>', $currentToken->id)->delete();
     }
 
     /**
@@ -44,8 +53,8 @@ trait Tracked
      *
      * @return bool
      */
-    public function logoutAll()
+    public function logoutAll(): bool
     {
-        return !empty($this->tokens()->delete());
+        return (bool) $this->tokens()->delete();
     }
 }

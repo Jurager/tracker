@@ -2,7 +2,6 @@
 
 namespace Jurager\Tracker;
 
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\ServiceProvider;
 
 class TrackerServiceProvider extends ServiceProvider
@@ -12,24 +11,25 @@ class TrackerServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         // Merge default config
         $this->mergeConfigFrom(__DIR__.'/../config/tracker.php', 'tracker');
     }
 
-	/**
-	 * Bootstrap services.
-	 *
-	 * @return void
-	 * @throws \ReflectionException
-	 */
-    public function boot()
+    /**
+     * Bootstrap services.
+     *
+     * @return void
+     */
+    public function boot(): void
     {
         // Publish config
-        $this->publishes([__DIR__.'/../config/tracker.php' => config_path('tracker.php')], 'config');
+        $this->publishes([
+            __DIR__.'/../config/tracker.php' => config_path('tracker.php')
+        ], 'config');
 
         // Load migrations
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 }

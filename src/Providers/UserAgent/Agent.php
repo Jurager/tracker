@@ -1,16 +1,12 @@
 <?php
 
-namespace Jurager\Tracker\Parsers;
+namespace Jurager\Tracker\Providers\UserAgent;
 
-use Jurager\Tracker\Interfaces\UserAgentParser;
 use Jenssegers\Agent\Agent as Parser;
 
-class Agent implements UserAgentParser
+class Agent implements UserAgentParserContract
 {
-    /**
-     * @var Parser
-     */
-    protected $parser;
+    protected Parser $parser;
 
     /**
      * Agent constructor.
@@ -25,7 +21,7 @@ class Agent implements UserAgentParser
      *
      * @return string|null
      */
-    public function getDevice()
+    public function getDevice(): ?string
     {
         $device = $this->parser->device();
 
@@ -37,12 +33,18 @@ class Agent implements UserAgentParser
      *
      * @return string|null
      */
-    public function getDeviceType()
+    public function getDeviceType(): ?string
     {
         if ($this->parser->isDesktop()) {
             return 'desktop';
-        } elseif ($this->parser->isMobile()) {
-            return $this->parser->isTablet() ? 'tablet' : ($this->parser->isPhone() ? 'phone' : 'mobile');
+        }
+
+        if ($this->parser->isMobile()) {
+            return match (true) {
+                $this->parser->isTablet() => 'tablet',
+                $this->parser->isPhone() => 'phone',
+                default => 'mobile',
+            };
         }
 
         return null;
@@ -53,7 +55,7 @@ class Agent implements UserAgentParser
      *
      * @return string|null
      */
-    public function getPlatform()
+    public function getPlatform(): ?string
     {
         return $this->parser->platform() ?: null;
     }
@@ -63,7 +65,7 @@ class Agent implements UserAgentParser
      *
      * @return string|null
      */
-    public function getBrowser()
+    public function getBrowser(): ?string
     {
         return $this->parser->browser() ?: null;
     }

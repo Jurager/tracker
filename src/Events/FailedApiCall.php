@@ -9,16 +9,13 @@ class FailedApiCall
 {
     use SerializesModels;
 
-    public $exception;
-
     /**
      * Create a new event instance.
      *
      * @param TransferException $exception
-     * @return void
      */
-    public function __construct(TransferException $exception)
-    {
-        $this->exception = $exception;
+    public function __construct(
+        public TransferException $exception
+    ) {
     }
 }

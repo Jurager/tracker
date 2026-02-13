@@ -10,6 +10,9 @@ With an IP address lookup, you may retrieve even more information, such as the g
 
 It also comes with a trait that introduces three useful methods for your user model: 'logout,' 'logoutOthers,' and 'logoutAll.'
 
+> [!NOTE]
+> The documentation for this package is currently being written. For now, please refer to this readme for information on the functionality and usage of the package.
+
 * [Requirements](#requirements)
 * [Installation](#installation)
   * [Override Sanctum Model](#override-sanctum-model)
@@ -27,7 +30,7 @@ It also comes with a trait that introduces three useful methods for your user mo
 
 ## Requirements
 
-`PHP => 8.0` and `Laravel => 8.x` with `Sanctum => 2.0`
+`PHP => 8.1+` and `Laravel => 10.x+` with `Sanctum => 3.x+`
 
 ## Installation
 
@@ -35,13 +38,13 @@ It also comes with a trait that introduces three useful methods for your user mo
 composer require jurager/tracker
 ```
 
-Publish the configuration with:
+Publish the configuration:
 
 ```bash
 php artisan vendor:publish --provider="Jurager\Tracker\TrackerServiceProvider" --tag="config"
 ```
 
-Run the migrations to update the tables:
+Run the migrations`:
 
 ```bash
 php artisan migrate
@@ -51,7 +54,9 @@ php artisan migrate
 
 This package comes with a custom model (`Jurager\Tracker\Models\PersonalAccessToken`) that extends the default Sanctum model.
 
-Instruct Sanctum to use this custom model via the `usePersonalAccessTokenModel` method provided by Sanctum. Typically, you should call this method in the `boot` method of one of your application's service providers:
+Instruct Sanctum to use this custom model via the `usePersonalAccessTokenModel` method provided by Sanctum.
+
+Typically, you should call this method in the `boot` method of one of your application's service providers:
 
 ```php
 use Jurager\Tracker\Models\PersonalAccessToken;
@@ -92,7 +97,7 @@ Before using this package, you need to choose a supported parser.
 
 ### Use the Trait
 
-This package provides a `Jurager\Tracker\Traits\Tracked` trait
+This package provides a `Jurager\Tracker\Traits\Trackable` trait
 that can be used on your user model to quickly revoke tokens.
 
 It introduces convenient methods:
@@ -102,12 +107,12 @@ It introduces convenient methods:
 - `logoutOthers`: to revoke all the tokens, except the current one
 
 ```php
-use Jurager\Tracker\Traits\Tracked;
+use Jurager\Tracker\Traits\Trackable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use Tracked;
+    use Trackable;
 
     // ...
 }

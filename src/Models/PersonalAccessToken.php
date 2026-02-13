@@ -3,8 +3,8 @@
 namespace Jurager\Tracker\Models;
 
 use Jurager\Tracker\Events\PersonalAccessTokenCreated;
-use Jurager\Tracker\RequestContext;
-use Carbon\Carbon;
+use Jurager\Tracker\Support\RequestContext;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Request;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 use Illuminate\Database\Eloquent\MassPrunable;
@@ -29,6 +29,8 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      * @var array
      */
     protected $fillable = [
+        'name',
+        'token',
         'abilities',
         'browser',
         'city',
@@ -37,10 +39,8 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         'device_type',
         'ip',
         'ip_data',
-        'name',
         'platform',
         'region',
-        'token',
         'user_agent',
     ];
 
@@ -58,33 +58,40 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      *
      * @return void
      */
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($personalAccessToken) {
-
+        static::creating(function (self $personalAccessToken): void {
             // Get as much information as possible about the request
-            $context = new RequestContext;
+            $context = new RequestContext();
+
+            $parser = $context->parser();
 
             $personalAccessToken->forceFill([
                 'user_agent'  => $context->userAgent,
                 'ip'          => $context->ip,
-                'device_type' => $context->parser()->getDeviceType(),
-                'device'      => $context->parser()->getDevice(),
-                'platform'    => $context->parser()->getPlatform(),
-                'browser'     => $context->parser()->getBrowser(),
+                'device_type' => $parser->getDeviceType(),
+                'device'      => $parser->getDevice(),
+                'platform'    => $parser->getPlatform(),
+                'browser'     => $parser->getBrowser(),
             ]);
 
             // If we have the IP geolocation data
-            if ($context->ip()) {
+            $ipProvider = $context->ip();
+
+            if ($ipProvider) {
                 $personalAccessToken->forceFill([
-                    'city'    => $context->ip()->getCity(),
-                    'region'  => $context->ip()->getRegion(),
-                    'country' => $context->ip()->getCountry(),
+                    'city'    => $ipProvider->getCity(),
+                    'region'  => $ipProvider->getRegion(),
+                    'country' => $ipProvider->getCountry(),
                 ]);
 
                 // Custom additional data?
-                if (method_exists($context->ip(), 'getCustomData') && $context->ip()->getCustomData()) {
-                    $personalAccessToken->ip_data = $context->ip()->getCustomData();
+                if (method_exists($ipProvider, 'getCustomData')) {
+                    $customData = $ipProvider->getCustomData();
+
+                    if ($customData) {
+                        $personalAccessToken->ip_data = $customData;
+                    }
                 }
             }
 
@@ -98,15 +105,15 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      *
      * @return string|null
      */
-    public function getLocationAttribute()
+    public function getLocationAttribute(): ?string
     {
-        $location = [
+        $location = array_filter([
             $this->city,
             $this->region,
             $this->country,
-        ];
+        ]);
 
-        return array_filter($location) ? implode(', ', $location) : null;
+        return $location ? implode(', ', $location) : null;
     }
 
     /**
@@ -114,18 +121,44 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
      *
      * @return bool
      */
-    public function getIsCurrentAttribute()
+    public function getIsCurrentAttribute(): bool
     {
-        return $this->id === Request::user()->currentAccessToken()->id;
+        $user = Request::user();
+
+        if (!$user) {
+            return false;
+        }
+
+        $currentToken = $user->currentAccessToken();
+
+        return $currentToken && $this->id === $currentToken->id;
     }
 
     /**
      * Get the prunable model query.
      *
-     * @return PersonalAccessToken
+     * @return Builder
      */
-    public function prunable()
+    public function prunable(): Builder
     {
-        return $this->where('last_used_at', '>=', now()->addDays(config('tracker.expires')));
+        $expires = (int) config('tracker.expires', 0);
+
+        // If pruning is disabled, return a query that matches nothing
+        if ($expires <= 0) {
+            return $this->whereNull('id');
+        }
+
+        $expiryDate = now()->subDays($expires);
+
+        // Return tokens that:
+        // 1. Have been used, but not recently (last_used_at is old)
+        // 2. Have never been used, but were created long ago (created_at is old)
+        return $this->where(function (Builder $query) use ($expiryDate) {
+            $query->where('last_used_at', '<=', $expiryDate)
+                ->orWhere(function (Builder $query) use ($expiryDate) {
+                    $query->whereNull('last_used_at')
+                        ->where('created_at', '<=', $expiryDate);
+                });
+        });
     }
 }
