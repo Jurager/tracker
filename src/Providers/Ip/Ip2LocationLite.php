@@ -7,6 +7,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 
+use Jurager\Tracker\Providers\IpProviderContract;
+
 class Ip2LocationLite implements IpProviderContract
 {
     protected ?object $result = null;

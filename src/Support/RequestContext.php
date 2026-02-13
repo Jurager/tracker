@@ -2,10 +2,10 @@
 
 namespace Jurager\Tracker\Support;
 
-use Jurager\Tracker\Providers\Ip\IpProviderFactory;
-use Jurager\Tracker\Providers\Ip\IpProviderContract;
-use Jurager\Tracker\Providers\UserAgent\ParserFactory;
-use Jurager\Tracker\Providers\UserAgent\UserAgentParserContract;
+use Jurager\Tracker\Providers\IpProviderFactory;
+use Jurager\Tracker\Providers\IpProviderContract;
+use Jurager\Tracker\Providers\UserAgentParserFactory;
+use Jurager\Tracker\Providers\UserAgentParserContract;
 use Illuminate\Support\Facades\Request;
 
 class RequestContext
@@ -23,7 +23,7 @@ class RequestContext
     public function __construct()
     {
         // Initialize the parser
-        $this->parser = ParserFactory::build(config('tracker.parser'));
+        $this->parser = UserAgentParserFactory::build(config('tracker.parser'));
 
         // Initialize the IP provider
         $this->ipProvider = IpProviderFactory::build(config('tracker.lookup.provider'));

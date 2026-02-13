@@ -1,8 +1,11 @@
 <?php
 
-namespace Jurager\Tracker\Providers\UserAgent;
+namespace Jurager\Tracker\Providers;
 
-class ParserFactory
+use Jurager\Tracker\Providers\UserAgent\Agent;
+use Jurager\Tracker\Providers\UserAgent\WhichBrowser;
+
+class UserAgentParserFactory
 {
     /**
      * Build a new user-agent parser.

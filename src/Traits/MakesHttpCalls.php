@@ -2,18 +2,19 @@
 
 namespace Jurager\Tracker\Traits;
 
-use Jurager\Tracker\Events\FailedApiCall;
+use Jurager\Tracker\Events\IpLookupFailed;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\TransferException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 
-trait MakesApiCalls
+trait MakesHttpCalls
 {
     protected Client $httpClient;
     protected ?Collection $result = null;
 
     /**
-     * MakesApiCalls constructor.
+     * Initialize HTTP client and make the API call.
      *
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
@@ -45,7 +46,7 @@ trait MakesApiCalls
             return $data ? collect($data) : null;
 
         } catch (TransferException $e) {
-            event(new FailedApiCall($e));
+            Event::dispatch(new IpLookupFailed($e));
 
             return null;
         }

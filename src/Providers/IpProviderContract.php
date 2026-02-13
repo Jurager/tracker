@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurager\Tracker\Providers\Ip;
+namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;

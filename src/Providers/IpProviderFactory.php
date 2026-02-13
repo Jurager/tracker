@@ -1,9 +1,11 @@
 <?php
 
-namespace Jurager\Tracker\Providers\Ip;
+namespace Jurager\Tracker\Providers;
 
 use Jurager\Tracker\Exceptions\CustomIpProviderException;
 use Jurager\Tracker\Exceptions\IpProviderException;
+use Jurager\Tracker\Providers\Ip\Ip2LocationLite;
+use Jurager\Tracker\Providers\Ip\IpApi;
 use Illuminate\Support\Facades\App;
 
 class IpProviderFactory

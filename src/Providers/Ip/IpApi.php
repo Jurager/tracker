@@ -2,13 +2,13 @@
 
 namespace Jurager\Tracker\Providers\Ip;
 
-use Jurager\Tracker\Traits\MakesApiCalls;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Support\Facades\Request;
 
-class IpApi implements IpProviderContract
+use Jurager\Tracker\Providers\AbstractIpProvider;
+
+class IpApi extends AbstractIpProvider
 {
-    use MakesApiCalls;
 
     /**
      * Get the Guzzle request.

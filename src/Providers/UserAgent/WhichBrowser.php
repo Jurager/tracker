@@ -5,6 +5,8 @@ namespace Jurager\Tracker\Providers\UserAgent;
 use Illuminate\Support\Facades\Request;
 use WhichBrowser\Parser;
 
+use Jurager\Tracker\Providers\UserAgentParserContract;
+
 class WhichBrowser implements UserAgentParserContract
 {
     protected Parser $parser;

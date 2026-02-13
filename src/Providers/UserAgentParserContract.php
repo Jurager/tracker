@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurager\Tracker\Providers\UserAgent;
+namespace Jurager\Tracker\Providers;
 
 interface UserAgentParserContract
 {

@@ -4,6 +4,8 @@ namespace Jurager\Tracker\Providers\UserAgent;
 
 use Jenssegers\Agent\Agent as Parser;
 
+use Jurager\Tracker\Providers\UserAgentParserContract;
+
 class Agent implements UserAgentParserContract
 {
     protected Parser $parser;
