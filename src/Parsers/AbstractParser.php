@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\Parsers;
 
 use Illuminate\Support\Facades\Request;
 
@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Request;
  * }
  * ```
  */
-abstract class AbstractUserAgentParser implements UserAgentParserContract
+abstract class AbstractUserAgentParser implements UserAgentParser
 {
     protected string $userAgent;
 

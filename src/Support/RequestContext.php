@@ -2,16 +2,16 @@
 
 namespace Jurager\Tracker\Support;
 
-use Jurager\Tracker\Providers\IpProviderFactory;
-use Jurager\Tracker\Providers\IpProviderContract;
-use Jurager\Tracker\Providers\UserAgentParserFactory;
-use Jurager\Tracker\Providers\UserAgentParserContract;
+use Jurager\Tracker\Factories\IpProviderFactory;
+use Jurager\Tracker\Contracts\IpProvider;
+use Jurager\Tracker\Factories\UserAgentParserFactory;
+use Jurager\Tracker\Contracts\UserAgentParser;
 use Illuminate\Support\Facades\Request;
 
 class RequestContext
 {
-    protected UserAgentParserContract $parser;
-    protected ?IpProviderContract $ipProvider = null;
+    protected UserAgentParser $parser;
+    protected ?IpProvider $ipProvider = null;
     public ?string $userAgent;
     public ?string $ip;
 
@@ -35,9 +35,9 @@ class RequestContext
     /**
      * Get the parser used to parse the User-Agent header.
      *
-     * @return UserAgentParserContract
+     * @return UserAgentParser
      */
-    public function parser(): UserAgentParserContract
+    public function parser(): UserAgentParser
     {
         return $this->parser;
     }
@@ -45,9 +45,9 @@ class RequestContext
     /**
      * Get the IP lookup result.
      *
-     * @return IpProviderContract|null
+     * @return IpProvider|null
      */
-    public function ip(): ?IpProviderContract
+    public function ip(): ?IpProvider
     {
         if ($this->ipProvider && $this->ipProvider->getResult()) {
             return $this->ipProvider;

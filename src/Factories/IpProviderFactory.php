@@ -1,11 +1,12 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\Factories;
 
+use Jurager\Tracker\Contracts\IpProvider;
 use Jurager\Tracker\Exceptions\CustomIpProviderException;
 use Jurager\Tracker\Exceptions\IpProviderException;
-use Jurager\Tracker\Providers\Ip\Ip2LocationLite;
-use Jurager\Tracker\Providers\Ip\IpApi;
+use Jurager\Tracker\IpProviders\Ip2LocationLite;
+use Jurager\Tracker\IpProviders\IpApi;
 use Illuminate\Support\Facades\App;
 
 class IpProviderFactory
@@ -14,10 +15,10 @@ class IpProviderFactory
      * Build a new IP provider.
      *
      * @param string|false|null $name
-     * @return IpProviderContract|null
+     * @return IpProvider|null
      * @throws \Exception|\GuzzleHttp\Exception\GuzzleException
      */
-    public static function build(string|false|null $name): ?IpProviderContract
+    public static function build(string|false|null $name): ?IpProvider
     {
         if (!self::ipLookupEnabled()) {
             return null;
@@ -29,9 +30,9 @@ class IpProviderFactory
         if (is_array($customProviders) && array_key_exists($name, $customProviders)) {
             $providerClass = $customProviders[$name];
 
-            if (!in_array(IpProviderContract::class, class_implements($providerClass) ?: [])) {
+            if (!in_array(IpProvider::class, class_implements($providerClass) ?: [])) {
                 throw new CustomIpProviderException(
-                    "Custom IP provider {$providerClass} must implement " . IpProviderContract::class
+                    "Custom IP provider {$providerClass} must implement " . IpProvider::class
                 );
             }
 

@@ -1,13 +1,13 @@
 <?php
 
-namespace Jurager\Tracker\Providers\Ip;
+namespace Jurager\Tracker\IpProviders;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Support\Facades\Request;
 
-use Jurager\Tracker\Providers\AbstractIpProvider;
+use Jurager\Tracker\IpProviders\AbstractProvider;
 
-class IpApi extends AbstractIpProvider
+class IpApi extends AbstractProvider
 {
 
     /**

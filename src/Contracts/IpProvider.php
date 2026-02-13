@@ -1,11 +1,11 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\Contracts;
 
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Support\Collection;
 
-interface IpProviderContract
+interface IpProvider
 {
     /**
      * Get the Guzzle request.

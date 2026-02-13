@@ -1,15 +1,15 @@
 <?php
 
-namespace Jurager\Tracker\Providers\Ip;
+namespace Jurager\Tracker\IpProviders;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Request;
 
-use Jurager\Tracker\Providers\IpProviderContract;
+use Jurager\Tracker\Contracts\IpProvider;
 
-class Ip2LocationLite implements IpProviderContract
+class Ip2LocationLite implements IpProvider
 {
     protected ?object $result = null;
 

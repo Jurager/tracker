@@ -1,8 +1,8 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\Contracts;
 
-interface UserAgentParserContract
+interface UserAgentParser
 {
     /**
      * Get the device name.

@@ -1,6 +1,6 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\IpProviders;
 
 use Jurager\Tracker\Traits\MakesHttpCalls;
 
@@ -12,7 +12,7 @@ use Jurager\Tracker\Traits\MakesHttpCalls;
  *
  * Example:
  * ```php
- * class MyCustomProvider extends AbstractIpProvider
+ * class MyCustomProvider extends AbstractProvider
  * {
  *     public function getRequest(): GuzzleRequest
  *     {
@@ -28,7 +28,7 @@ use Jurager\Tracker\Traits\MakesHttpCalls;
  * }
  * ```
  */
-abstract class AbstractIpProvider implements IpProviderContract
+abstract class AbstractIpProvider implements IpProvider
 {
     use MakesHttpCalls;
 

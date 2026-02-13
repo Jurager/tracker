@@ -1,9 +1,10 @@
 <?php
 
-namespace Jurager\Tracker\Providers;
+namespace Jurager\Tracker\Factories;
 
-use Jurager\Tracker\Providers\UserAgent\Agent;
-use Jurager\Tracker\Providers\UserAgent\WhichBrowser;
+use Jurager\Tracker\Contracts\UserAgentParser;
+use Jurager\Tracker\Parsers\Agent;
+use Jurager\Tracker\Parsers\WhichBrowser;
 
 class UserAgentParserFactory
 {
@@ -11,10 +12,10 @@ class UserAgentParserFactory
      * Build a new user-agent parser.
      *
      * @param string|null $name
-     * @return UserAgentParserContract
+     * @return UserAgentParser
      * @throws \Exception
      */
-    public static function build(?string $name): UserAgentParserContract
+    public static function build(?string $name): UserAgentParser
     {
         return match ($name) {
             'agent' => new Agent(),

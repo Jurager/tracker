@@ -1,12 +1,12 @@
 <?php
 
-namespace Jurager\Tracker\Providers\UserAgent;
+namespace Jurager\Tracker\Parsers;
 
 use Jenssegers\Agent\Agent as Parser;
 
-use Jurager\Tracker\Providers\UserAgentParserContract;
+use Jurager\Tracker\Contracts\UserAgentParser;
 
-class Agent implements UserAgentParserContract
+class Agent implements UserAgentParser
 {
     protected Parser $parser;
 
