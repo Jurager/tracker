@@ -1,284 +1,456 @@
-# Jurager/Tracker
-[![Latest Stable Version](https://poser.pugx.org/jurager/tracker/v/stable)](https://packagist.org/packages/jurager/teams)
-[![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/teams)
+# Laravel Sanctum Tracker
+
+[![Latest Stable Version](https://poser.pugx.org/jurager/tracker/v/stable)](https://packagist.org/packages/jurager/tracker)
+[![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/tracker)
 [![PHP Version Require](http://poser.pugx.org/jurager/tracker/require/php)](https://packagist.org/packages/jurager/tracker)
-[![License](https://poser.pugx.org/jurager/tracker/license)](https://packagist.org/packages/jurager/teams)
+[![License](https://poser.pugx.org/jurager/tracker/license)](https://packagist.org/packages/jurager/tracker)
 
-This package allows you to track sanctum tokens by reading the request and recording the IP address, and other metadata to database.
+Track Laravel Sanctum authentication tokens with detailed metadata including IP addresses, user agents, device information, and optional geolocation data.
 
-With an IP address lookup, you may retrieve even more information, such as the geolocation, by using a supported provider or establishing your own custom providers.
 
-It also comes with a trait that introduces three useful methods for your user model: 'logout,' 'logoutOthers,' and 'logoutAll.'
+- IP Geolocation Tracking (country, region, city)
+- Device Detection (type, browser, platform)
+- Session Management
+- Automatic Token Pruning
+- Customizable Providers and Parsers
 
 > [!NOTE]
 > The documentation for this package is currently being written. For now, please refer to this readme for information on the functionality and usage of the package.
 
-* [Requirements](#requirements)
-* [Installation](#installation)
-  * [Override Sanctum Model](#override-sanctum-model)
-  * [Pruning Outdated Records](#pruning-outdated-records)
-  * [Install a User-Agent Parser](#install-a-user-agent-parser)
-  * [Use the Trait](#use-the-trait)
-* [Usage](#usage)
-* [IP Lookup](#ip-lookup)
-  * [IP2Location Lite](#ip2location-lite)
-  * [Custom Provider](#custom-provider)
-  * [Handle Errors](#handle-errors)
-* [Events](#events)
-  * [TokenCreated](#tokencreated)
-* [License](#license)
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Session Management](#session-management)
+  - [Querying Tokens](#querying-tokens)
+- [IP Geolocation](#ip-geolocation)
+- [Custom Providers](#custom-providers)
+- [Events](#events)
+- [Testing](#testing)
+- [API Reference](#api-reference)
+- [License](#license)
 
 ## Requirements
 
-`PHP => 8.1+` and `Laravel => 10.x+` with `Sanctum => 3.x+`
+- PHP: 8.1 or higher
+- Laravel: 10.x, 11.x, or 12.x
+- Laravel Sanctum: 3.x or 4.x
 
 ## Installation
+
+### Step 1: Install via Composer
 
 ```bash
 composer require jurager/tracker
 ```
 
-Publish the configuration:
+### Step 2: Publish Configuration
 
 ```bash
 php artisan vendor:publish --provider="Jurager\Tracker\TrackerServiceProvider" --tag="config"
 ```
 
-Run the migrations`:
+### Step 3: Run Migrations
 
 ```bash
 php artisan migrate
 ```
 
+### Step 4: Install a User-Agent Parser
+
+Choose one of the supported parsers:
+
+```bash
+# Option 1: jenssegers/agent (Recommended)
+composer require jenssegers/agent
+
+# Option 2: whichbrowser/parser
+composer require whichbrowser/parser
+```
+
+Update `config/tracker.php`:
+
+```php
+'parser' => 'agent', // or 'whichbrowser'
+```
+
+## Configuration
+
 ### Override Sanctum Model
 
-This package comes with a custom model (`Jurager\Tracker\Models\PersonalAccessToken`) that extends the default Sanctum model.
-
-Instruct Sanctum to use this custom model via the `usePersonalAccessTokenModel` method provided by Sanctum.
-
-Typically, you should call this method in the `boot` method of one of your application's service providers:
+In your `AppServiceProvider` or `AuthServiceProvider`:
 
 ```php
 use Jurager\Tracker\Models\PersonalAccessToken;
 use Laravel\Sanctum\Sanctum;
 
-/**
- * Bootstrap any application services.
- *
- * @return void
- */
-public function boot()
+public function boot(): void
 {
     Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 }
 ```
 
-### Pruning Outdated Records
-
-This package allows you to remove outdated authentication records.
-
-Period for records to expire is described in configuration `tracker.expires`.
-
-Add schedule command to your `Kernel.php`, you can use period as you need
-
-```php
-$schedule->command('model:prune')->everyMinute();
-```
-
-### Install a User-Agent Parser
-
-This package relies on a User-Agent parser to extract the informations.
-
-Currently supported parsers:
-- [Agent](https://github.com/jenssegers/agent)
-- [WhichBrowser](https://github.com/WhichBrowser/Parser-PHP)
-
-Before using this package, you need to choose a supported parser.
-
-### Use the Trait
-
-This package provides a `Jurager\Tracker\Traits\Trackable` trait
-that can be used on your user model to quickly revoke tokens.
-
-It introduces convenient methods:
-
-- `logout`: to revoke the current token or a specific token by passing its ID in parameter
-- `logoutAll`: to revoke all the tokens, including the current one
-- `logoutOthers`: to revoke all the tokens, except the current one
+### Add Trackable Trait to User Model
 
 ```php
 use Jurager\Tracker\Traits\Trackable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use Trackable;
-
-    // ...
+    use HasApiTokens, Trackable;
 }
+```
+
+### Setup Auto-Pruning (Optional)
+
+To automatically remove expired tokens, add to `app/Console/Kernel.php`:
+
+```php
+protected function schedule(Schedule $schedule): void
+{
+    $schedule->command('model:prune')->daily();
+}
+```
+
+Configure expiration in `config/tracker.php`:
+
+```php
+'expires' => 90, // Days until tokens expire (0 = never)
 ```
 
 ## Usage
 
-Use Sanctum as like you would normally do. 
+### Basic Usage
 
-The `PersonalAccessToken` model provided by this package will automatically be populated with the extra informations.
-
-## IP Lookup
-
-By default, package collects the IP and the information given by the User-Agent header.
-
-But you can go even further and collect other data, like the geolocation.
-
-To do so, you first have to enable the IP lookup feature in the configuration file.
-
-This package comes with two officially supported providers for IP address lookup
-(see the IP Address Lookup section in the `config/tracker.php` configuration file).
-
-### IP2Location Lite
-
-This package officially support the IP address geolocation with the IP2Location DB3.
-
-Here are the steps to enable and use it:
-
-- Download the database and follow the instructions in the [documentation](https://lite.ip2location.com/database/ip-country-region-city) to import it:
-
-- Set the name of the `lookup.provider` option to `ip2location-lite` in the `config/tracker.php`
-
-- Set the name of the tables used in your database for IPv4 and IPv6 in the `config/tracker.php`
-
-### Custom Provider
-
-You can add your own providers by creating a class that implements the
-`Jurager\Tracker\Interfaces\IpProvider` interface and use the `Jurager\Tracker\Traits\MakesApiCalls` trait.
-
-Your custom class have to be registered in the `custom_providers` array of the configuration file.
-
-Let's see an example of an IP lookup provider with the built-in `IpApi` provider:
+The package works transparently with Sanctum. Just create tokens as usual:
 
 ```php
-use Jurager\Tracker\Interfaces\IpProvider;
-use Jurager\Tracker\Traits\MakesApiCalls;
+$user = User::find(1);
+$token = $user->createToken('mobile-app');
+
+// Token metadata is automatically populated
+$accessToken = $token->accessToken;
+
+echo $accessToken->device;      // "iPhone"
+echo $accessToken->device_type; // "phone"
+echo $accessToken->platform;    // "iOS"
+echo $accessToken->browser;     // "Safari"
+echo $accessToken->ip;          // "192.168.1.1"
+echo $accessToken->country;     // "United States" (if geolocation enabled)
+echo $accessToken->location;    // "New York, New York, United States"
+```
+
+### Session Management
+
+```php
+use Illuminate\Http\Request;
+
+class AuthController extends Controller
+{
+    // Logout from current device
+    public function logout(Request $request)
+    {
+        $request->user()->logout();
+
+        return response()->json(['message' => 'Logged out']);
+    }
+
+    // Logout from specific device by token ID
+    public function logoutDevice(Request $request, $tokenId)
+    {
+        $request->user()->logout($tokenId);
+
+        return response()->json(['message' => 'Device logged out']);
+    }
+
+    // Logout from all other devices
+    public function logoutOthers(Request $request)
+    {
+        $request->user()->logoutOthers();
+
+        return response()->json(['message' => 'Other devices logged out']);
+    }
+
+    // Logout from all devices
+    public function logoutAll(Request $request)
+    {
+        $request->user()->logoutAll();
+
+        return response()->json(['message' => 'All devices logged out']);
+    }
+}
+```
+
+### Querying Tokens
+
+```php
+// Get all login history
+$allLogins = $user->logins;
+
+// Get recent logins (last 30 days)
+$recentLogins = $user->recentLogins(30)->get();
+
+// Get active devices (used in last 30 days)
+$activeDevices = $user->activeDevices(30)->get();
+
+// Filter by device type
+$mobileLogins = $user->byDevice('mobile')->get();
+$desktopLogins = $user->byDevice('desktop')->get();
+
+// Filter by platform
+$iosLogins = $user->byPlatform('iOS')->get();
+$macLogins = $user->byPlatform('macOS')->get();
+
+// Filter by country
+$usLogins = $user->byCountry('United States')->get();
+```
+
+### Token Methods
+
+```php
+$token = $user->tokens()->first();
+
+// Check if token is expired
+if ($token->isExpired()) {
+    $token->revoke();
+}
+
+// Mark token as used
+$token->markAsUsed();
+
+// Check if this is the current token
+$currentToken = $request->user()->currentAccessToken();
+if ($token->isCurrent($currentToken)) {
+    // This is the current token
+}
+```
+
+## IP Geolocation
+
+### Built-in Provider: IP-API
+
+Enable IP geolocation in `config/tracker.php`:
+
+```php
+'lookup' => [
+    'provider' => 'ip-api',
+    'timeout' => 1.0,
+    'retries' => 2,
+    'environments' => ['production', 'staging'],
+],
+```
+
+Now tokens will include geolocation data:
+
+```php
+$token = $user->createToken('mobile-app')->accessToken;
+
+echo $token->country; // "United States"
+echo $token->region;  // "California"
+echo $token->city;    // "San Francisco"
+echo $token->location; // "San Francisco, California, United States"
+```
+
+### Built-in Provider: IP2Location Lite
+
+1. Download [IP2Location DB3 database](https://lite.ip2location.com/database/ip-country-region-city)
+2. Import to your database
+3. Configure in `config/tracker.php`:
+
+```php
+'lookup' => [
+    'provider' => 'ip2location-lite',
+    'ip2location' => [
+        'ipv4_table' => 'ip2location_db3',
+        'ipv6_table' => 'ip2location_db3_ipv6',
+    ],
+],
+```
+
+## Custom Providers
+
+Create a custom IP provider by implementing the `Provider` interface:
+
+```php
+namespace App\IpProviders;
+
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
-use Illuminate\Support\Facades\Request;
+use Jurager\Tracker\Contracts\Provider;
+use Jurager\Tracker\Providers\AbstractProvider;
 
-class IpApi implements IpProvider
+class MyCustomProvider extends AbstractProvider
 {
-    use MakesApiCalls;
-
-    /**
-     * Get the Guzzle request.
-     *
-     * @return GuzzleRequest
-     */
-    public function getRequest()
+    public function getRequest(): GuzzleRequest
     {
-        return new GuzzleRequest('GET', 'http://ip-api.com/json/'.Request::ip().'?fields=25');
+        return new GuzzleRequest(
+            'GET',
+            "https://api.example.com/lookup/{$this->ip}"
+        );
     }
 
-    /**
-     * Get the country name.
-     *
-     * @return string
-     */
-    public function getCountry()
+    public function getCountry(): ?string
     {
-        return $this->result->get('country');
+        return $this->result?->get('country');
     }
 
-    /**
-     * Get the region name.
-     *
-     * @return string
-     */
-    public function getRegion()
+    public function getRegion(): ?string
     {
-        return $this->result->get('regionName');
+        return $this->result?->get('region');
     }
 
-    /**
-     * Get the city name.
-     *
-     * @return string
-     */
-    public function getCity()
+    public function getCity(): ?string
     {
-        return $this->result->get('city');
+        return $this->result?->get('city');
+    }
+
+    // Optional: Store additional data
+    public function getCustomData(): array
+    {
+        return [
+            'timezone' => $this->result?->get('timezone'),
+            'isp' => $this->result?->get('isp'),
+        ];
     }
 }
 ```
 
-As you can see, the class has a `getRequest` method that must return a `GuzzleHttp\Psr7\Request` instance.
-
-Guzzle utilizes PSR-7 as the HTTP message interface. Check its documentation:
-[http://docs.guzzlephp.org/en/stable/psr7.html](http://docs.guzzlephp.org/en/stable/psr7.html)
-
-The `IpProvider` interface comes with required methods related to the geolocation.
-All keys of the API response are accessible in your provider via `$this->result`, which is a Laravel collection.
-
-If you want to collect other informations, you can add a `getCustomData` method in your custom provider.
-This custom data will be saved in the logins table in the `ip_data` JSON column.
-Let's see an example of additional data:
+Register in `config/tracker.php`:
 
 ```php
-public function getCustomData()
-{
-    return [
-        'country_code' => $this->result->get('countryCode'),
-        'latitude'     => $this->result->get('lat'),
-        'longitude'    => $this->result->get('lon'),
-        'timezone'     => $this->result->get('timezone'),
-        'isp_name'     => $this->result->get('isp'),
-    ];
-}
+'lookup' => [
+    'provider' => 'my-provider',
+    'custom_providers' => [
+        'my-provider' => \App\IpProviders\MyCustomProvider::class,
+    ],
+],
 ```
-
-### Handle Errors
-
-This package fires the `FailedApiCall` event if an exception is triggered during an API request to your IP address lookup provider.
-
-This event has an exception attribute containing the `GuzzleHttp\Exception\TransferException`
-(see [Guzzle documentation](http://docs.guzzlephp.org/en/stable/quickstart.html#exceptions)).
-
-This event can be listened to in order to add your own logic.
 
 ## Events
 
-### TokenCreated
+### TokenCreated Event
 
-You can listen to the `Jurager/Tracker/Events/TokenCreated` event on a new login.
+Listen to token creation events:
 
-It has a `personalAccessToken` property, which has the newly created `Jurager/Tracker/Models/PersonalAccessToken` and a `context` property, which receives a `Jurager/Tracker/RequestContext` which contains all the data collected on the request.
-
-Available properties:
 ```php
-$this->context->userAgent; // The full, unparsed, User-Agent header
-$this->context->ip;        // The IP address
+namespace App\Listeners;
+
+use Jurager\Tracker\Events\TokenCreated;
+
+class NotifyUserOfNewLogin
+{
+    public function handle(TokenCreated $event): void
+    {
+        $token = $event->personalAccessToken;
+        $context = $event->context;
+
+        // Send notification
+        $token->tokenable->notify(new NewDeviceLogin(
+            device: $token->device,
+            location: $token->location,
+            ip: $context->ip,
+        ));
+    }
+}
 ```
 
-Available methods:
+Register in `EventServiceProvider`:
+
 ```php
-$this->context->parser(); // Returns the parser used to parse the User-Agent header
-$this->context->ip();     // Returns the IP address lookup provider
+use Jurager\Tracker\Events\TokenCreated;
+
+protected $listen = [
+    TokenCreated::class => [
+        NotifyUserOfNewLogin::class,
+    ],
+];
 ```
 
-Available methods in the parser:
+### LookupFailed Event
+
+Handle IP lookup failures:
+
 ```php
-$this->context->parser()->getDevice();     // The name of the device (MacBook...)
-$this->context->parser()->getDeviceType(); // The type of the device (desktop, mobile, tablet, phone...)
-$this->context->parser()->getPlatform();   // The name of the platform (macOS...)
-$this->context->parser()->getBrowser();    // The name of the browser (Chrome...)
+use Jurager\Tracker\Events\LookupFailed;
+
+protected $listen = [
+    LookupFailed::class => [
+        LogIpLookupFailure::class,
+    ],
+];
 ```
 
-Available methods in the IP address lookup provider:
-```php
-$this->context->ip()->getCountry(); // The name of the country
-$this->context->ip()->getRegion();  // The name of the region
-$this->context->ip()->getCity();    // The name of the city
-$this->context->ip()->getResult();  // The entire result of the API call as a Laravel collection
+## Testing
 
-// And all your custom methods in the case of a custom provider
+Run the test suite:
+
+```bash
+composer test
 ```
+
+Run tests with coverage:
+
+```bash
+composer test:coverage
+```
+
+### Writing Tests
+
+```php
+use Jurager\Tracker\Models\PersonalAccessToken;
+use Laravel\Sanctum\Sanctum;
+
+class MyTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+    }
+
+    public function test_user_can_logout(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->accessToken;
+
+        $this->actingAs($user);
+        $user->logout();
+
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'id' => $token->id,
+        ]);
+    }
+}
+```
+
+## API Reference
+
+### Trackable Trait Methods
+
+| Method | Description |
+|--------|-------------|
+| `logins()` | Get all login tokens |
+| `recentLogins(int $days = 30)` | Get recent logins within specified days |
+| `activeDevices(int $days = 30)` | Get active devices (used recently) |
+| `byDevice(string $type)` | Filter by device type (desktop, mobile, tablet, phone) |
+| `byPlatform(string $platform)` | Filter by platform (iOS, Android, Windows, macOS, etc.) |
+| `byCountry(string $country)` | Filter by country name |
+| `logout(?int $tokenId = null)` | Logout from current or specific device |
+| `logoutOthers()` | Logout from all other devices |
+| `logoutAll()` | Logout from all devices |
+
+### PersonalAccessToken Methods
+
+| Method | Description |
+|--------|-------------|
+| `isExpired()` | Check if token is expired based on config |
+| `revoke()` | Delete/revoke the token |
+| `isCurrent(?self $token)` | Check if this is the current token |
+| `markAsUsed()` | Update last_used_at timestamp |
+| `location` | Get formatted location string (accessor) |
 
 ## License
 

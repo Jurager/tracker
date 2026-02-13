@@ -13,19 +13,25 @@ class UpdatePersonalAccessTokensTable extends Migration
      */
     public function up()
     {
+        if (!Schema::hasTable('personal_access_tokens')) {
+            return;
+        }
+
         Schema::table('personal_access_tokens', function (Blueprint $table) {
-            $table->after('name', function ($table) {
-                $table->string('user_agent')->nullable();
-                $table->string('ip')->nullable();
-                $table->json('ip_data')->nullable();
-                $table->string('device_type')->nullable();
-                $table->string('device')->nullable();
-                $table->string('platform')->nullable();
-                $table->string('browser')->nullable();
-                $table->string('city')->nullable();
-                $table->string('region')->nullable();
-                $table->string('country')->nullable();
-            });
+            if (!Schema::hasColumn('personal_access_tokens', 'user_agent')) {
+                $table->after('name', function ($table) {
+                    $table->string('user_agent')->nullable();
+                    $table->string('ip')->nullable();
+                    $table->json('ip_data')->nullable();
+                    $table->string('device_type')->nullable();
+                    $table->string('device')->nullable();
+                    $table->string('platform')->nullable();
+                    $table->string('browser')->nullable();
+                    $table->string('city')->nullable();
+                    $table->string('region')->nullable();
+                    $table->string('country')->nullable();
+                });
+            }
         });
     }
 

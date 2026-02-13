@@ -30,7 +30,7 @@ use Jurager\Tracker\Traits\MakesHttpCalls;
  * }
  * ```
  */
-abstract class AbstractProviderContract implements ProviderContract
+abstract class AbstractProvider implements ProviderContract
 {
     use MakesHttpCalls;
 

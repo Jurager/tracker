@@ -4,7 +4,7 @@ namespace Jurager\Tracker\Providers;
 
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 
-class IpApi extends AbstractProviderContract
+class IpApi extends AbstractProvider
 {
     /**
      * Get the Guzzle request.

@@ -2,8 +2,9 @@
 
 namespace Jurager\Tracker\Tests;
 
-use ALajusticia\Expirable\ExpirableServiceProvider;
+use Jurager\Tracker\Models\PersonalAccessToken;
 use Jurager\Tracker\TrackerServiceProvider;
+use Laravel\Sanctum\Sanctum;
 use Laravel\Sanctum\SanctumServiceProvider;
 
 abstract class TestCase extends \Orchestra\Testbench\TestCase
@@ -17,9 +18,20 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
     {
         parent::setUp();
 
-        $this->loadLaravelMigrations();
+        // Use custom PersonalAccessToken model
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+    }
 
-        $this->artisan('migrate')->run();
+    /**
+     * Define database migrations.
+     *
+     * @return void
+     */
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(__DIR__ . '/../vendor/laravel/sanctum/database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
     /**
@@ -29,12 +41,23 @@ abstract class TestCase extends \Orchestra\Testbench\TestCase
      *
      * @return array
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             TrackerServiceProvider::class,
-            ExpirableServiceProvider::class,
             SanctumServiceProvider::class,
         ];
+    }
+
+    /**
+     * Define environment setup.
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return void
+     */
+    protected function defineEnvironment($app): void
+    {
+        $app['config']->set('tracker.parser', 'agent');
+        $app['config']->set('tracker.lookup.provider', false);
     }
 }
