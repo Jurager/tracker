@@ -4,6 +4,7 @@
 [![Total Downloads](https://poser.pugx.org/jurager/tracker/downloads)](https://packagist.org/packages/jurager/tracker)
 [![PHP Version Require](http://poser.pugx.org/jurager/tracker/require/php)](https://packagist.org/packages/jurager/tracker)
 [![License](https://poser.pugx.org/jurager/tracker/license)](https://packagist.org/packages/jurager/tracker)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/jurager01)
 
 Track Laravel Sanctum authentication tokens with detailed metadata including IP addresses, user agents, device information, and optional geolocation data.
 
